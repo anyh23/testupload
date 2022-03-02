@@ -174,9 +174,9 @@ for word in words:
     url = 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query='+word
     driver.get(url)
 
-    for _ in range(5):
+    for _ in range(3):
         ActionChains(driver).send_keys(Keys.END).perform()
-        time.sleep(1)
+        time.sleep(0.5)
 
 
      
