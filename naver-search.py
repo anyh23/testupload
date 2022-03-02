@@ -213,7 +213,7 @@ for word in words:
         
         for num in numList:
             #print(num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1])
-            f = open('result_output.txt', 'a', newline='', encoding='utf-8')
+            f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
             wr = csv.writer(f)
             wr.writerow([word, num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1]])
             f.close()
