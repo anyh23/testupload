@@ -171,52 +171,64 @@ driver = webdriver.Chrome()
 for word in words:
     word = word[0]
 
-url = 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query='+'미스트'
-driver.get(url)
+    url = 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query='+word
+    driver.get(url)
 
-for _ in range(5):
-    ActionChains(driver).send_keys(Keys.END).perform()
-    time.sleep(1)
-
-
- 
-html = driver.page_source
-soup = BeautifulSoup(html, 'html.parser')
-numList = soup.find_all(class_= 'api_more_wrap')
+    for _ in range(5):
+        ActionChains(driver).send_keys(Keys.END).perform()
+        time.sleep(1)
 
 
-clickList = readCsv('../search.txt')
-#clickList = ['후기 더보기','참여 콘텐츠 더보기','팁 모음 더보기']
-
-
-_urlList = []
-
-for num in numList:
-    num = num.findNext('a')
-    for click in clickList:
-        if str(num.getText()).find(click[0]) != -1:
-            
-            _urlList.append(num['href'])
-            #xpath = xpath_soup(num)
-            #selenium_element = driver.find_element_by_xpath(xpath)
-            #    ActionChains(driver).move_to_element(selenium_element).perform()
-            #   selenium_element.click()
-             
-            time.sleep(1)
-            
-for _url in _urlList:
-    driver.get(_url)
-    
+     
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
-    numList = soup.find_all(class_= 'group_inner')
-    
-    
-    
-    
-    
+    numList = soup.find_all(class_= 'api_more_wrap')
+
+
+    clickList = readCsv('../search.txt')
+    #clickList = ['후기 더보기','참여 콘텐츠 더보기','팁 모음 더보기']
+
+
+    _urlList = []
+
     for num in numList:
-        print(num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1])
+        num = num.findNext('a')
+        for click in clickList:
+            if str(num.getText()).find(click[0]) != -1:
+                
+                _urlList.append(num['href'])
+                #xpath = xpath_soup(num)
+                #selenium_element = driver.find_element_by_xpath(xpath)
+                #    ActionChains(driver).move_to_element(selenium_element).perform()
+                #   selenium_element.click()
+                 
+                time.sleep(1)
+                
+    for _url in _urlList:
+        driver.get(_url)
+        
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
+        numList = soup.find_all(class_= 'group_inner')
+        
+        for num in numList:
+            #print(num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1])
+            f = open('result_output.txt', 'a', newline='', encoding='utf-8')
+            wr = csv.writer(f)
+            wr.writerow([word, num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1]])
+            f.close()
+        
+        
+        
+        
+        # outTime = time.time() - s
+        # wr.writerow([outTime])
+        # s = time.time()        
+        # print(text)
+        
+        
+        
+        
         # if num.findNext('a')['href'] == '#':
             # num = num.findNext('a')
             # print(num.findNext('a')['href'])
