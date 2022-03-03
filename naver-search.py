@@ -269,9 +269,13 @@ for word in words:
         
         NaverIDtoBlog = {}
         for _idLink in getNaverIDtoBlog:
+            isExceptWord = False
             for _word in except_words:
                 if str(num['href']).find(_word) != -1:
-                    continue
+                    isExceptWord = True
+                    break
+            if isExceptWord:
+                continue
         
             _id = str(_idLink).replace('https://','').split('/')[1]
             
@@ -283,9 +287,13 @@ for word in words:
 
         NaverIDtoIn = {}
         for _idLink in getNaverIDtoIn:
+            isExceptWord = False
             for _word in except_words:
                 if str(num['href']).find(_word) != -1:
-                    continue
+                    isExceptWord = True
+                    break
+            if isExceptWord:
+                continue
             
             if str(_idLink).find('?query') != -1:
                 continue
