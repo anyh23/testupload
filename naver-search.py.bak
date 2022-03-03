@@ -205,6 +205,10 @@ for word in words:
                 time.sleep(1)
                 
     for _url in _urlList:
+    
+        if str(_url)[0] == '?':
+            _url = 'https://search.naver.com/search.naver'+_url
+        
         driver.get(_url)
         
         html = driver.page_source
