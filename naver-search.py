@@ -176,9 +176,6 @@ text = ''
 for _m in message:
     text += (_m[0])
 
-words = readCsv('../keyword.txt')
-print('검색어 :', words)
-
 driver = webdriver.Chrome()
 
 for word in words:
