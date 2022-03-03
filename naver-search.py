@@ -222,6 +222,7 @@ for word in words:
             wr.writerow([word, num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1]])
             f.close()
         
+        
 #driver.close()   
         
         
