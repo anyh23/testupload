@@ -251,8 +251,7 @@ for word in words:
         getNaverIDtoIn = []
         getNaverIDtoBlog = []
         
-        
-        except_words = ['MyBlog.naver', 'nidlogin.login', 'influencer_search', 'nidlogin.login']
+        except_words = ['naver_search', 'MyBlog.naver', 'nidlogin.login', 'influencer_search', 'nidlogin.login']
         
         for num in numList:
             try:
@@ -271,7 +270,7 @@ for word in words:
         for _idLink in getNaverIDtoBlog:
             isExceptWord = False
             for _word in except_words:
-                if str(num['href']).find(_word) != -1:
+                if str(_idLink).find(_word) != -1:
                     isExceptWord = True
                     break
             if isExceptWord:
@@ -289,7 +288,7 @@ for word in words:
         for _idLink in getNaverIDtoIn:
             isExceptWord = False
             for _word in except_words:
-                if str(num['href']).find(_word) != -1:
+                if str(_idLink).find(_word) != -1:
                     isExceptWord = True
                     break
             if isExceptWord:
