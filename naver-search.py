@@ -182,7 +182,8 @@ for word in words:
      
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
-    numList = soup.find_all(class_= 'api_more_wrap')
+    #numList = soup.find_all(class_= 'api_more_wrap')
+    numList = soup.find_all('a')
 
 
     clickList = readCsv('../search.txt')
@@ -192,10 +193,9 @@ for word in words:
     _urlList = []
 
     for num in numList:
-        num = num.findNext('a')
+#        num = num.findNext('a')
         for click in clickList:
             if str(num.getText()).find(click[0]) != -1:
-                
                 _urlList.append(num['href'])
                 #xpath = xpath_soup(num)
                 #selenium_element = driver.find_element_by_xpath(xpath)
@@ -204,26 +204,138 @@ for word in words:
                  
                 time.sleep(1)
                 
+                
+#    for _url in _urlList:
+#    
+#        if str(_url)[0] == '?':
+#            _url = 'https://search.naver.com/search.naver'+_url
+#        
+#        driver.get(_url)
+#        
+#        html = driver.page_source
+#        soup = BeautifulSoup(html, 'html.parser')
+#        numList = soup.find_all(class_= 'group_inner')
+#        
+#        for num in numList:
+#            #print(num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1])
+#            f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+#            wr = csv.writer(f)
+#            wr.writerow([word, num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1]])
+#            f.close()
+
     for _url in _urlList:
     
         if str(_url)[0] == '?':
             _url = 'https://search.naver.com/search.naver'+_url
-        
         driver.get(_url)
-        
+
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
-        numList = soup.find_all(class_= 'group_inner')
+        numList = soup.find_all('a')
+        
+        getNaverIDtoIn = []
+        getNaverIDtoBlog = []
+        
+        
+#        except_words = ['MyBlog.naver', 'nidlogin.login', 'influencer_search', 'nidlogin.login']
         
         for num in numList:
-            #print(num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1])
-            f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-            wr = csv.writer(f)
-            wr.writerow([word, num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1]])
-            f.close()
+            try:
+                if str(num['href']).find('https://in.naver.com/') != -1:
+#                    for _word in except_words:
+#                        if str(num['href']).find(_word) == -1:
+                    getNaverIDtoIn.append(num['href'])
+                
+                if str(num['href']).find('https://blog.naver.com/') != -1:
+                    getNaverIDtoBlog.append(num['href'])
+            except:
+                pass
         
         
-#driver.close()   
+        NaverIDtoBlog = {}
+        for _idLink in getNaverIDtoBlog:
+            if str(_idLink).find('MyBlog.naver') != -1:
+                continue
+        
+            _id = str(_idLink).replace('https://','').split('/')[1]
+            
+            NaverIDtoBlog[_id] = 1
+            
+            if len(NaverIDtoBlog) >= 10:
+                break
+        
+
+        NaverIDtoIn = {}
+        for _idLink in getNaverIDtoIn:
+            if str(_idLink).find('?query') != -1:
+                continue
+        
+            _id = str(_idLink).replace('https://','').split('/')[1].split('?')[0]
+            
+            NaverIDtoIn[_id] = 1
+            
+            if len(NaverIDtoIn) >= 10:
+                break
+            
+        datalist = []
+        
+        for k in NaverIDtoBlog.keys():
+            dic = {}
+            dic['keyword'] = word
+            try:
+                __url = 'https://blog.naver.com/'+k
+                driver.get(__url)
+                dic['id'] = k
+                dic['type'] = 'blogger'
+                
+                driver.switch_to.frame('mainFrame')
+                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
+                dic['name'] = _name
+                
+                datalist.append(dic)
+                
+                f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([word, k, 'blogger', _name])
+                f.close()
+                
+            except:
+                pass
+            
+        
+        for k in NaverIDtoIn.keys():
+            dic = {}
+            dic['keyword'] = word
+            try:
+                __url = 'https://blog.naver.com/'+k
+                driver.get(__url)
+                dic['id'] = k
+                dic['type'] = 'influencer'
+                
+                driver.switch_to.frame('mainFrame')
+                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
+                dic['name'] = _name
+                
+                datalist.append(dic)
+                
+                f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([word, k, 'influencer', _name])
+                f.close()
+                
+            except:
+                pass
+        
+            
+                
+
+
+
+#<a target="_blank" href="https://in.naver.com/iamchocolat?query=%EB%AF%B8%EC%8A%A4%ED%8A%B8+%EC%B0%B8%EC%97%AC+%EC%BD%98%ED%85%90%EC%B8%A0" class="name" onclick="goOtherCR(this, 'a=itb_bas*f.profile&amp;r=19&amp;i=SPC-0000000000006816.a0209rl4_nblog_post_222653959305&amp;g=%7B%22bid%22%3A%22SPC-0000000000006816%22%2C%22docRank%22%3A1%7D&amp;u='+urlencode(this.href));">쇼콜라</a>
+#        <a target="_blank" href="https://in.naver.com/cosreader?query=%EB%B7%B0%EB%9F%AC" class="name elss" onclick="return goOtherCR(this,'a=ink_kib*a.nickname&amp;r=1&amp;i=a0209rl4_nblog_post_222652147919&amp;u='+urlencode(this.href))"><span class="txt">화장품읽어주는남자</span></a>
+#        
+        
+driver.close()   
         
         
         # outTime = time.time() - s
