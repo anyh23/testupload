@@ -161,8 +161,21 @@ timer = ''
         # s = time.time()        
         # print(text)
         # f.close()
-            
-            
+
+
+
+words = readCsv('../keyword.txt')
+print('검색어 :', words)
+
+size = readCsv('./size.txt')
+size = int(size[0][0])
+print('검색 사이즈 :', size)
+
+message = readCsv('./message.txt')
+text = ''
+for _m in message:
+    text += (_m[0])
+
 words = readCsv('../keyword.txt')
 print('검색어 :', words)
 
@@ -170,7 +183,8 @@ driver = webdriver.Chrome()
 
 for word in words:
     word = word[0]
-
+    print(word)
+    
     url = 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query='+word
     driver.get(url)
 
@@ -228,7 +242,11 @@ for word in words:
         if str(_url)[0] == '?':
             _url = 'https://search.naver.com/search.naver'+_url
         driver.get(_url)
-
+        
+        for _ in range(1):
+            ActionChains(driver).send_keys(Keys.END).perform()
+            time.sleep(0.5)
+        
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
         numList = soup.find_all('a')
@@ -237,7 +255,7 @@ for word in words:
         getNaverIDtoBlog = []
         
         
-#        except_words = ['MyBlog.naver', 'nidlogin.login', 'influencer_search', 'nidlogin.login']
+        except_words = ['MyBlog.naver', 'nidlogin.login', 'influencer_search', 'nidlogin.login']
         
         for num in numList:
             try:
@@ -254,19 +272,24 @@ for word in words:
         
         NaverIDtoBlog = {}
         for _idLink in getNaverIDtoBlog:
-            if str(_idLink).find('MyBlog.naver') != -1:
-                continue
+            for _word in except_words:
+                if str(num['href']).find(_word) != -1:
+                    continue
         
             _id = str(_idLink).replace('https://','').split('/')[1]
             
             NaverIDtoBlog[_id] = 1
             
-            if len(NaverIDtoBlog) >= 10:
+            if len(NaverIDtoBlog) >= size:
                 break
         
 
         NaverIDtoIn = {}
         for _idLink in getNaverIDtoIn:
+            for _word in except_words:
+                if str(num['href']).find(_word) != -1:
+                    continue
+            
             if str(_idLink).find('?query') != -1:
                 continue
         
@@ -274,7 +297,7 @@ for word in words:
             
             NaverIDtoIn[_id] = 1
             
-            if len(NaverIDtoIn) >= 10:
+            if len(NaverIDtoIn) >= size:
                 break
             
         datalist = []
@@ -283,10 +306,11 @@ for word in words:
             dic = {}
             dic['keyword'] = word
             try:
+                _type = '블로거'
                 __url = 'https://blog.naver.com/'+k
                 driver.get(__url)
                 dic['id'] = k
-                dic['type'] = 'blogger'
+                dic['type'] = _type
                 
                 driver.switch_to.frame('mainFrame')
                 _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
@@ -296,7 +320,14 @@ for word in words:
                 
                 f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
                 wr = csv.writer(f)
-                wr.writerow([word, k, 'blogger', _name])
+                wr.writerow([word, k, _type, _name])
+                f.close()
+                
+                sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
+                
+                f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([sendText])
                 f.close()
                 
             except:
@@ -307,10 +338,12 @@ for word in words:
             dic = {}
             dic['keyword'] = word
             try:
+                
+                _type = '인플루언서'
                 __url = 'https://blog.naver.com/'+k
                 driver.get(__url)
                 dic['id'] = k
-                dic['type'] = 'influencer'
+                dic['type'] = _type
                 
                 driver.switch_to.frame('mainFrame')
                 _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
@@ -320,7 +353,14 @@ for word in words:
                 
                 f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
                 wr = csv.writer(f)
-                wr.writerow([word, k, 'influencer', _name])
+                wr.writerow([word, k, _type, _name])
+                f.close()
+                
+                sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
+                
+                f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([sendText])
                 f.close()
                 
             except:
