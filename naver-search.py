@@ -167,11 +167,20 @@ timer = ''
 words = readCsv('../keyword.txt')
 print('검색어 :', words)
 
-size = readCsv('./size.txt')
+try:
+    size = readCsv('./size.txt')
+except:
+    size = readCsv('../size.txt')
+
 size = int(size[0][0])
 print('검색 사이즈 :', size)
 
-message = readCsv('./message.txt')
+try:
+    message = readCsv('./message.txt')
+except:
+    message = readCsv('../message.txt')
+
+
 text = ''
 for _m in message:
     text += (_m[0])
