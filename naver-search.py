@@ -194,11 +194,24 @@ overTime = len(words) * 2 * size
 #timer = threading.Timer(overTime, overTimer)
 #timer.start()
 
-driver = webdriver.Chrome()
+
+options = webdriver.ChromeOptions() 
+#options.add_argument("--auto-open-devtools-for-tabs")
+
+mobile_emulation = { "deviceName": "Nexus 5" }
+
+options.add_experimental_option("mobileEmulation", mobile_emulation)
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option('useAutomationExtension', False)
+#driver = webdriver.Chrome(options=options, executable_path=r'../chromedriver_win3298/chromedriver')
+driver = webdriver.Chrome(options=options)
+
+#driver = webdriver.Chrome()
 
 for word in words:
     word = word[0]
     print(word)
+    
     
     url = 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query='+word
     driver.get(url)
