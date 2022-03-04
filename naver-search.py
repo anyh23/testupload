@@ -206,6 +206,7 @@ overTime = len(words) * 2 * size
 ##driver = webdriver.Chrome(options=options, executable_path=r'../chromedriver_win3298/chromedriver')
 #driver = webdriver.Chrome(options=options)
 
+
 driver = webdriver.Chrome()
 
 for word in words:
