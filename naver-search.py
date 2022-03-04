@@ -187,213 +187,207 @@ for _m in message:
 
 overTime = len(words) * 2 * size
 
-while(True):
-    try:
-        
-        if timer != '': 
-            timer.cancel()
-        
-        timer = threading.Timer(overTime, overTimer)
-        timer.start()
-        
-        driver = webdriver.Chrome()
-        
-        for word in words:
-            word = word[0]
-            print(word)
-            
-            url = 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query='+word
-            driver.get(url)
-        
-            for _ in range(3):
-                ActionChains(driver).send_keys(Keys.END).perform()
-                time.sleep(0.5)
-        
-        
-             
-            html = driver.page_source
-            soup = BeautifulSoup(html, 'html.parser')
-            #numList = soup.find_all(class_= 'api_more_wrap')
-            numList = soup.find_all('a')
-        
-        
-            clickList = readCsv('../search.txt')
-            #clickList = ['후기 더보기','참여 콘텐츠 더보기','팁 모음 더보기']
-        
-        
-            _urlList = []
-        
-            for num in numList:
-        #        num = num.findNext('a')
-                for click in clickList:
-                    if str(num.getText()).find(click[0]) != -1:
-                        _urlList.append(num['href'])
-                        #xpath = xpath_soup(num)
-                        #selenium_element = driver.find_element_by_xpath(xpath)
-                        #    ActionChains(driver).move_to_element(selenium_element).perform()
-                        #   selenium_element.click()
-                         
-                        time.sleep(1)
-                        
-                        
-        #    for _url in _urlList:
-        #    
-        #        if str(_url)[0] == '?':
-        #            _url = 'https://search.naver.com/search.naver'+_url
-        #        
-        #        driver.get(_url)
-        #        
-        #        html = driver.page_source
-        #        soup = BeautifulSoup(html, 'html.parser')
-        #        numList = soup.find_all(class_= 'group_inner')
-        #        
-        #        for num in numList:
-        #            #print(num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1])
-        #            f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-        #            wr = csv.writer(f)
-        #            wr.writerow([word, num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1]])
-        #            f.close()
-        
-            for _url in _urlList:
-            
-                if str(_url)[0] == '?':
-                    _url = 'https://search.naver.com/search.naver'+_url
-                driver.get(_url)
-                
-                for _ in range(1):
-                    ActionChains(driver).send_keys(Keys.END).perform()
-                    time.sleep(0.5)
-                
-                html = driver.page_source
-                soup = BeautifulSoup(html, 'html.parser')
-                numList = soup.find_all('a')
-                
-                getNaverIDtoIn = []
-                getNaverIDtoBlog = []
-                
-                except_words = ['naver_search', 'MyBlog.naver', 'nidlogin.login', 'influencer_search', 'nidlogin.login']
-                
-                for num in numList:
-                    try:
-                        if str(num['href']).find('https://in.naver.com/') != -1:
-        #                    for _word in except_words:
-        #                        if str(num['href']).find(_word) == -1:
-                            getNaverIDtoIn.append(num['href'])
-                        
-                        if str(num['href']).find('https://blog.naver.com/') != -1:
-                            getNaverIDtoBlog.append(num['href'])
-                    except:
-                        pass
-                
-                
-                NaverIDtoBlog = {}
-                for _idLink in getNaverIDtoBlog:
-                    isExceptWord = False
-                    for _word in except_words:
-                        if str(_idLink).find(_word) != -1:
-                            isExceptWord = True
-                            break
-                    if isExceptWord:
-                        continue
-                
-                    _id = str(_idLink).replace('https://','').split('/')[1]
-                    
-                    NaverIDtoBlog[_id] = 1
-                    
-                    if len(NaverIDtoBlog) >= size:
-                        break
-                
-        
-                NaverIDtoIn = {}
-                for _idLink in getNaverIDtoIn:
-                    isExceptWord = False
-                    for _word in except_words:
-                        if str(_idLink).find(_word) != -1:
-                            isExceptWord = True
-                            break
-                    if isExceptWord:
-                        continue
-                    
-                    if str(_idLink).find('?query') != -1:
-                        continue
-                
-                    _id = str(_idLink).replace('https://','').split('/')[1].split('?')[0]
-                    
-                    NaverIDtoIn[_id] = 1
-                    
-                    if len(NaverIDtoIn) >= size:
-                        break
-                    
-                datalist = []
-                
-                for k in NaverIDtoBlog.keys():
-                    dic = {}
-                    dic['keyword'] = word
-                    try:
-                        _type = '블로거'
-                        __url = 'https://blog.naver.com/'+k
-                        driver.get(__url)
-                        dic['id'] = k
-                        dic['type'] = _type
-                        
-                        driver.switch_to.frame('mainFrame')
-                        _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
-                        dic['name'] = _name
-                        
-                        datalist.append(dic)
-                        
-                        f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-                        wr = csv.writer(f)
-                        wr.writerow([word, k, _type, _name])
-                        f.close()
-                        
-                        sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
-                        
-                        f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-                        wr = csv.writer(f)
-                        wr.writerow([sendText])
-                        f.close()
-                        
-                    except:
-                        pass
-                    
-                
-                for k in NaverIDtoIn.keys():
-                    dic = {}
-                    dic['keyword'] = word
-                    try:
-                        
-                        _type = '인플루언서'
-                        __url = 'https://blog.naver.com/'+k
-                        driver.get(__url)
-                        dic['id'] = k
-                        dic['type'] = _type
-                        
-                        driver.switch_to.frame('mainFrame')
-                        _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
-                        dic['name'] = _name
-                        
-                        datalist.append(dic)
-                        
-                        f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-                        wr = csv.writer(f)
-                        wr.writerow([word, k, _type, _name])
-                        f.close()
-                        
-                        sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
-                        
-                        f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-                        wr = csv.writer(f)
-                        wr.writerow([sendText])
-                        f.close()
-                        
-                    except:
-                        pass
-        
-        break
+
+#if timer != '': 
+#    timer.cancel()
+#
+#timer = threading.Timer(overTime, overTimer)
+#timer.start()
+
+driver = webdriver.Chrome()
+
+for word in words:
+    word = word[0]
+    print(word)
     
-    except:
-        pass
+    url = 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query='+word
+    driver.get(url)
+
+    for _ in range(3):
+        ActionChains(driver).send_keys(Keys.END).perform()
+        time.sleep(0.5)
+
+
+     
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    #numList = soup.find_all(class_= 'api_more_wrap')
+    numList = soup.find_all('a')
+
+
+    clickList = readCsv('../search.txt')
+    #clickList = ['후기 더보기','참여 콘텐츠 더보기','팁 모음 더보기']
+
+
+    _urlList = []
+
+    for num in numList:
+#        num = num.findNext('a')
+        for click in clickList:
+            if str(num.getText()).find(click[0]) != -1:
+                _urlList.append(num['href'])
+                #xpath = xpath_soup(num)
+                #selenium_element = driver.find_element_by_xpath(xpath)
+                #    ActionChains(driver).move_to_element(selenium_element).perform()
+                #   selenium_element.click()
+                 
+                time.sleep(1)
+                
+                
+#    for _url in _urlList:
+#    
+#        if str(_url)[0] == '?':
+#            _url = 'https://search.naver.com/search.naver'+_url
+#        
+#        driver.get(_url)
+#        
+#        html = driver.page_source
+#        soup = BeautifulSoup(html, 'html.parser')
+#        numList = soup.find_all(class_= 'group_inner')
+#        
+#        for num in numList:
+#            #print(num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1])
+#            f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+#            wr = csv.writer(f)
+#            wr.writerow([word, num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1]])
+#            f.close()
+
+    for _url in _urlList:
+    
+        if str(_url)[0] == '?':
+            _url = 'https://search.naver.com/search.naver'+_url
+        driver.get(_url)
+        
+        for _ in range(1):
+            ActionChains(driver).send_keys(Keys.END).perform()
+            time.sleep(0.5)
+        
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
+        numList = soup.find_all('a')
+        
+        getNaverIDtoIn = []
+        getNaverIDtoBlog = []
+        
+        except_words = ['naver_search', 'MyBlog.naver', 'nidlogin.login', 'influencer_search', 'nidlogin.login']
+        
+        for num in numList:
+            try:
+                if str(num['href']).find('https://in.naver.com/') != -1:
+#                    for _word in except_words:
+#                        if str(num['href']).find(_word) == -1:
+                    getNaverIDtoIn.append(num['href'])
+                
+                if str(num['href']).find('https://blog.naver.com/') != -1:
+                    getNaverIDtoBlog.append(num['href'])
+            except:
+                pass
+        
+        
+        NaverIDtoBlog = {}
+        for _idLink in getNaverIDtoBlog:
+            isExceptWord = False
+            for _word in except_words:
+                if str(_idLink).find(_word) != -1:
+                    isExceptWord = True
+                    break
+            if isExceptWord:
+                continue
+        
+            _id = str(_idLink).replace('https://','').split('/')[1]
+            
+            NaverIDtoBlog[_id] = 1
+            
+            if len(NaverIDtoBlog) >= size:
+                break
+        
+
+        NaverIDtoIn = {}
+        for _idLink in getNaverIDtoIn:
+            isExceptWord = False
+            for _word in except_words:
+                if str(_idLink).find(_word) != -1:
+                    isExceptWord = True
+                    break
+            if isExceptWord:
+                continue
+            
+            if str(_idLink).find('?query') != -1:
+                continue
+        
+            _id = str(_idLink).replace('https://','').split('/')[1].split('?')[0]
+            
+            NaverIDtoIn[_id] = 1
+            
+            if len(NaverIDtoIn) >= size:
+                break
+            
+        datalist = []
+        
+        for k in NaverIDtoBlog.keys():
+            dic = {}
+            dic['keyword'] = word
+            try:
+                _type = '블로거'
+                __url = 'https://blog.naver.com/'+k
+                driver.get(__url)
+                dic['id'] = k
+                dic['type'] = _type
+                
+                driver.switch_to.frame('mainFrame')
+                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
+                dic['name'] = _name
+                
+                datalist.append(dic)
+                
+                f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([word, k, _type, _name])
+                f.close()
+                
+                sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
+                
+                f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([sendText])
+                f.close()
+                
+            except:
+                pass
+            
+        
+        for k in NaverIDtoIn.keys():
+            dic = {}
+            dic['keyword'] = word
+            try:
+                
+                _type = '인플루언서'
+                __url = 'https://blog.naver.com/'+k
+                driver.get(__url)
+                dic['id'] = k
+                dic['type'] = _type
+                
+                driver.switch_to.frame('mainFrame')
+                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
+                dic['name'] = _name
+                
+                datalist.append(dic)
+                
+                f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([word, k, _type, _name])
+                f.close()
+                
+                sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
+                
+                f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([sendText])
+                f.close()
+                
+            except:
+                pass
+        
 
 
 
