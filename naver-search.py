@@ -256,13 +256,14 @@ for word in words:
 #        num = num.findNext('a')
         for click in clickList:
             if str(num.getText()).find(click[0]) != -1:
-                _urlList.append(num['href'])
+                if str(num['href']).find('https://in.naver.com/') == -1:
+                    _urlList.append(num['href'])
                 #xpath = xpath_soup(num)
                 #selenium_element = driver.find_element_by_xpath(xpath)
                 #    ActionChains(driver).move_to_element(selenium_element).perform()
                 #   selenium_element.click()
                  
-                time.sleep(1)
+                    time.sleep(0.5)
                 
                 
 #    for _url in _urlList:
@@ -289,7 +290,7 @@ for word in words:
             _url = 'https://search.naver.com/search.naver'+_url
         driver.get(_url)
         
-        for _ in range(1):
+        for _ in range(2):
             ActionChains(driver).send_keys(Keys.END).perform()
             time.sleep(0.5)
         
@@ -300,7 +301,7 @@ for word in words:
         getNaverIDtoIn = []
         getNaverIDtoBlog = []
         
-        except_words = ['naver_search', 'MyBlog.naver', 'nidlogin.login', 'influencer_search', 'nidlogin.login']
+        except_words = ['naver_search', 'MyBlog.naver', 'nidlogin.login', 'influencer_search', 'nidlogin.login', 'challenge']
         
         for num in numList:
             try:
@@ -348,8 +349,8 @@ for word in words:
             if isExceptWord:
                 continue
             
-            if str(_idLink).find('?query') != -1:
-                continue
+#            if str(_idLink).find('?query') != -1:
+#                continue
         
             _id = str(_idLink).replace('https://','').split('/')[1].split('?')[0]
             
@@ -358,13 +359,9 @@ for word in words:
             if len(NaverIDtoIn) >= size:
                 break
             
+        
         datalist = []
        
-        
-        
-        
-        
-        
         for k in NaverIDtoBlog.keys():
             dic = {}
             dic['keyword'] = word
