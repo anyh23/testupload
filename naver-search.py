@@ -417,6 +417,10 @@ for word in words:
         
     
     for k in NaverIDtoIn_all.keys():
+        
+        if k in list(NaverIDtoBlog_all.keys()):
+            continue
+            
         if k == '':
             continue
         
