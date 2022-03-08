@@ -412,6 +412,7 @@ for word in words:
             wr.writerow([sendText])
             f.close()
             
+            time.sleep(0.7)
         except:
             pass
         
@@ -457,6 +458,8 @@ for word in words:
             wr = csv.writer(f)
             wr.writerow([sendText])
             f.close()
+            
+            time.sleep(0.7)
             
         except:
             pass
