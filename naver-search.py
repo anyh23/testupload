@@ -195,19 +195,18 @@ overTime = len(words) * 2 * size
 #timer.start()
 
 
-#options = webdriver.ChromeOptions() 
-##options.add_argument("--auto-open-devtools-for-tabs")
-#
-#mobile_emulation = { "deviceName": "Nexus 5" }
-#
-#options.add_experimental_option("mobileEmulation", mobile_emulation)
-#options.add_experimental_option("excludeSwitches", ["enable-automation"])
-#options.add_experimental_option('useAutomationExtension', False)
-##driver = webdriver.Chrome(options=options, executable_path=r'../chromedriver_win3298/chromedriver')
-#driver = webdriver.Chrome(options=options)
+options = webdriver.ChromeOptions() 
+#options.add_argument("--auto-open-devtools-for-tabs")
 
+mobile_emulation = { "deviceName": "Nexus 5" }
 
-driver = webdriver.Chrome()
+options.add_experimental_option("mobileEmulation", mobile_emulation)
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option('useAutomationExtension', False)
+#driver = webdriver.Chrome(options=options, executable_path=r'../chromedriver_win3298/chromedriver')
+driver = webdriver.Chrome(options=options)
+
+#driver = webdriver.Chrome()
 
 for word in words:
     word = word[0]
@@ -292,7 +291,8 @@ for word in words:
 #                        if str(num['href']).find(_word) == -1:
                     getNaverIDtoIn.append(num['href'])
                 
-                if str(num['href']).find('https://blog.naver.com/') != -1:
+#                if str(num['href']).find('https://blog.naver.com/') != -1:
+                if str(num['href']).find('blog.naver.com/') != -1:
                     getNaverIDtoBlog.append(num['href'])
             except:
                 pass
@@ -337,6 +337,9 @@ for word in words:
                 break
             
         datalist = []
+       
+        
+        
         
         for k in NaverIDtoBlog.keys():
             dic = {}
