@@ -284,6 +284,10 @@ for word in words:
 #            wr.writerow([word, num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1]])
 #            f.close()
 
+    
+    NaverIDtoBlog_all = {}
+    NaverIDtoIn_all = {}
+    
     for _url in _urlList:
     
         if str(_url)[0] == '?':
@@ -351,92 +355,106 @@ for word in words:
             
 #            if str(_idLink).find('?query') != -1:
 #                continue
-        
+            
             _id = str(_idLink).replace('https://','').split('/')[1].split('?')[0]
             
             NaverIDtoIn[_id] = 1
             
             if len(NaverIDtoIn) >= size:
                 break
-            
         
-        datalist = []
-       
-        for k in NaverIDtoBlog.keys():
-            dic = {}
-            dic['keyword'] = word
-            try:
-                _type = '블로거'
-                __url = 'https://blog.naver.com/'+k
-                driver.get(__url)
-                dic['id'] = k
-                dic['type'] = _type
-                
+        
+        ##여기에 중복제거 로직 추가
+        for __ID in NaverIDtoIn.keys():
+            NaverIDtoIn_all[__ID] = 1
+            
+        for __ID in NaverIDtoBlog.keys():
+            NaverIDtoBlog_all[__ID] = 1
+
+        
+    #블로그를 탐색하며 실 ID 체크 및 NICNAME 체크  
+    datalist = []
+    for k in NaverIDtoBlog.keys():
+        if k == '':
+            continue
+        
+        dic = {}
+        dic['keyword'] = word
+        try:
+            _type = '블로거'
+            __url = 'https://blog.naver.com/'+k
+            driver.get(__url)
+            dic['id'] = k
+            dic['type'] = _type
+            
 #                driver.switch_to.frame('mainFrame')
 #                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
 #                dic['name'] = _name
-                
-                _name = getMobileBlogNic()
-                if _name == -1:
-                    continue
-                
-                dic['name'] = _name
-                
-                datalist.append(dic)
-                
-                f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-                wr = csv.writer(f)
-                wr.writerow([word, k, _type, _name])
-                f.close()
-                
-                sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
-                
-                f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-                wr = csv.writer(f)
-                wr.writerow([sendText])
-                f.close()
-                
-            except:
-                pass
             
+            _name = getMobileBlogNic()
+            if _name == -1:
+                continue
+            
+            dic['name'] = _name
+            
+            datalist.append(dic)
+            
+            f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+            wr = csv.writer(f)
+            wr.writerow([word, k, _type, _name])
+            f.close()
+            
+            sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
+            
+            f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+            wr = csv.writer(f)
+            wr.writerow([sendText])
+            f.close()
+            
+        except:
+            pass
         
-        for k in NaverIDtoIn.keys():
-            dic = {}
-            dic['keyword'] = word
-            try:
-                
-                _type = '인플루언서'
-                __url = 'https://blog.naver.com/'+k
-                driver.get(__url)
-                dic['id'] = k
-                dic['type'] = _type
-                
+    
+    for k in NaverIDtoIn.keys():
+        if k == '':
+            continue
+        
+        dic = {}
+        dic['keyword'] = word
+        try:
+            
+            _type = '인플루언서'
+            __url = 'https://blog.naver.com/'+k
+            driver.get(__url)
+            dic['id'] = k
+            dic['type'] = _type
+            
 #                driver.switch_to.frame('mainFrame')
 #                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
 #                dic['name'] = _name
-                
-                _name = getMobileBlogNic()
-                if _name == -1:
-                    continue
-                
-                dic['name'] = _name
-                
-                datalist.append(dic)
-                
-                f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-                wr = csv.writer(f)
-                wr.writerow([word, k, _type, _name])
-                f.close()
-                
-                sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
-                
-                f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-                wr = csv.writer(f)
-                wr.writerow([sendText])
-                f.close()
-                
-            except:
-                pass
+            
+            _name = getMobileBlogNic()
+            if _name == -1:
+                continue
+            
+            dic['name'] = _name
+            
+            datalist.append(dic)
+            
+            f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+            wr = csv.writer(f)
+            wr.writerow([word, k, _type, _name])
+            f.close()
+            
+            sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
+            
+            f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+            wr = csv.writer(f)
+            wr.writerow([sendText])
+            f.close()
+            
+        except:
+            pass
         
 
 
