@@ -292,8 +292,8 @@ for word in words:
                     getNaverIDtoIn.append(num['href'])
                 
 #                if str(num['href']).find('https://blog.naver.com/') != -1:
-                if str(num['href']).find('blog.naver.com/') != -1:
-                    getNaverIDtoBlog.append(num['href'])
+#                if str(num['href']).find('blog.naver.com/') != -1:
+#                    getNaverIDtoBlog.append(num['href'])
                     
                     
                 if str(num['href']).find('https://blog.naver.com/') != -1:
