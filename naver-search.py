@@ -145,6 +145,24 @@ def readCsv(path):
     f.close()
     return temp
 
+
+def getMobileBlogNic():
+    global driver
+    
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    numList = soup.find_all('div')
+    
+    for num in numList:
+        try:
+            if str(num['class']).find('nickname') != -1:
+                return num.getText()
+        except:
+            pass
+    
+    return -1
+
+
 allCount = 0
 ipAddr = ''
 timer = ''
@@ -195,18 +213,18 @@ overTime = len(words) * 2 * size
 #timer.start()
 
 
-#options = webdriver.ChromeOptions() 
-##options.add_argument("--auto-open-devtools-for-tabs")
-#
-#mobile_emulation = { "deviceName": "Nexus 5" }
-#
-#options.add_experimental_option("mobileEmulation", mobile_emulation)
-#options.add_experimental_option("excludeSwitches", ["enable-automation"])
-#options.add_experimental_option('useAutomationExtension', False)
-##driver = webdriver.Chrome(options=options, executable_path=r'../chromedriver_win3298/chromedriver')
-#driver = webdriver.Chrome(options=options)
+options = webdriver.ChromeOptions() 
+#options.add_argument("--auto-open-devtools-for-tabs")
 
-driver = webdriver.Chrome()
+mobile_emulation = { "deviceName": "Nexus 5" }
+
+options.add_experimental_option("mobileEmulation", mobile_emulation)
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option('useAutomationExtension', False)
+#driver = webdriver.Chrome(options=options, executable_path=r'../chromedriver_win3298/chromedriver')
+driver = webdriver.Chrome(options=options)
+
+#driver = webdriver.Chrome()
 
 for word in words:
     word = word[0]
@@ -292,12 +310,12 @@ for word in words:
                     getNaverIDtoIn.append(num['href'])
                 
 #                if str(num['href']).find('https://blog.naver.com/') != -1:
-#                if str(num['href']).find('blog.naver.com/') != -1:
-#                    getNaverIDtoBlog.append(num['href'])
-                    
-                    
-                if str(num['href']).find('https://blog.naver.com/') != -1:
+                if str(num['href']).find('blog.naver.com/') != -1:
                     getNaverIDtoBlog.append(num['href'])
+                    
+                    
+#                if str(num['href']).find('https://blog.naver.com/') != -1:
+#                    getNaverIDtoBlog.append(num['href'])
             except:
                 pass
         
@@ -345,6 +363,8 @@ for word in words:
         
         
         
+        
+        
         for k in NaverIDtoBlog.keys():
             dic = {}
             dic['keyword'] = word
@@ -355,8 +375,14 @@ for word in words:
                 dic['id'] = k
                 dic['type'] = _type
                 
-                driver.switch_to.frame('mainFrame')
-                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
+#                driver.switch_to.frame('mainFrame')
+#                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
+#                dic['name'] = _name
+                
+                _name = getMobileBlogNic()
+                if _name == -1:
+                    continue
+                
                 dic['name'] = _name
                 
                 datalist.append(dic)
@@ -388,8 +414,14 @@ for word in words:
                 dic['id'] = k
                 dic['type'] = _type
                 
-                driver.switch_to.frame('mainFrame')
-                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
+#                driver.switch_to.frame('mainFrame')
+#                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
+#                dic['name'] = _name
+                
+                _name = getMobileBlogNic()
+                if _name == -1:
+                    continue
+                
                 dic['name'] = _name
                 
                 datalist.append(dic)
