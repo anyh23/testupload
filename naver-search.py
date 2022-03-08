@@ -396,7 +396,7 @@ for word in words:
             if _name == -1:
                 continue
             
-            dic['name'] = _name
+            dic['name'] = str(_name).replace('마켓블로그','').replace('공식 블로그','')
             
             datalist.append(dic)
             
@@ -438,7 +438,7 @@ for word in words:
             if _name == -1:
                 continue
             
-            dic['name'] = _name
+            dic['name'] = str(_name).replace('마켓블로그','').replace('공식 블로그','')
             
             datalist.append(dic)
             
