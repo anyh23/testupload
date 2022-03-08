@@ -284,14 +284,15 @@ for word in words:
 #            wr.writerow([word, num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1]])
 #            f.close()
 
-    
     NaverIDtoBlog_all = {}
     NaverIDtoIn_all = {}
     
     for _url in _urlList:
     
         if str(_url)[0] == '?':
-            _url = 'https://search.naver.com/search.naver'+_url
+#            _url = 'https://search.naver.com/search.naver'+_url
+        #모바일
+            _url = 'https://m.search.naver.com/search.naver'+_url
         driver.get(_url)
         
         for _ in range(5):
