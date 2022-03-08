@@ -375,7 +375,7 @@ for word in words:
         
     #블로그를 탐색하며 실 ID 체크 및 NICNAME 체크  
     datalist = []
-    for k in NaverIDtoBlog.keys():
+    for k in NaverIDtoBlog_all.keys():
         if k == '':
             continue
         
@@ -416,7 +416,7 @@ for word in words:
             pass
         
     
-    for k in NaverIDtoIn.keys():
+    for k in NaverIDtoIn_all.keys():
         if k == '':
             continue
         
