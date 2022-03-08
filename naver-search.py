@@ -294,9 +294,9 @@ for word in words:
             _url = 'https://search.naver.com/search.naver'+_url
         driver.get(_url)
         
-        for _ in range(2):
+        for _ in range(5):
             ActionChains(driver).send_keys(Keys.END).perform()
-            time.sleep(0.5)
+            time.sleep(1)
         
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
