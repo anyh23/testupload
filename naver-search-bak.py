@@ -34,67 +34,6 @@ driver = ''
 DATETYPE = '%Y-%m-%d'
 # DATETYPE2 = '%Y.%m.%d'
 
-esUrl = 'http://3.37.243.132:9200/'
-
-import json
-
-esType ='data'
-indexDate = ''
-indexDateD = ''
-bulkSize = 1000
-
-def getdetails_qurey(esIndex, qurey, esUrl = esUrl):
-    with requests.Session() as session:
-        url = esUrl + esIndex + '/_search'
-        body = qurey
-        
-        headers = {'content-type': "application/json"}
-        response = session.request("POST", url, data=str(json.dumps(body)), headers=headers, verify=False, proxies={})
-#        print(response.text)
-        try:
-            jsonString  = json.loads(response.text, encoding="utf-8")
-            arr = jsonString["hits"]["hits"]
-            # print(arr)
-        except Exception as b:
-            # print('error getIds',b)
-            return {}
-    return arr
-
-
-
-def insertBulk(datalist, esIndex, esUrl = esUrl):
-
-    make = ''
-    with requests.Session() as session:
-        for i in range(len(datalist)):
-            
-            _id = str(datalist[i][0])
-            make += "{ \"index\" : { \"_index\" : \""+esIndex+"\", \"_type\" : \""+esType+"\", \"_id\" : \""+_id+"\" } }\r\n"+str(json.dumps(datalist[i][1]))+"\r\n"
-            if (i != 0 and i%bulkSize == 0 ) or i == len(datalist)-1:
-                print('input',i+1,'개')
-                
-                url = esUrl +'_bulk'
-                headers = {'content-type': "application/x-ndjson"}
-                response = session.request("POST", url, data=make.encode(encoding='utf-8'), headers=headers, verify=False, proxies={})
-                # print(response,'200이면 성공')
-                
-                if str(response).find('200') == -1:
-                    print('error', response.text)
-                #print(response.text)
-                make = ''
-
-
-
-def DateToString2(value):
-    if value == 'now':
-        value = datetime.datetime.now()
-  
-    # String = str(year)+str(month)+str(day)    
-    String = value.strftime('%Y-%m-%dT%H:%M:%S')
-    String2 = value.strftime('%Y%m%d%H%M%S')
-    return String, String2 
-
-
 def DateToString(value):
     if value == 'now':
         value = datetime.datetime.now()
@@ -246,22 +185,6 @@ timer = ''
 words = readCsv('../keyword.txt')
 print('검색어 :', words)
 
-if words[0][0].find('auto')!= -1:
-    print('auto mode start')
-
-    q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-    r_arr = getdetails_qurey('cubist_naver_keyword', q)
-    
-    _temp = []
-    
-    for _arr in r_arr:
-        _arr = _arr['_source']
-        _temp.append([_arr['value']])
-
-    words = _temp
-    print('검색어 :', words)
-
-
 try:
     size = readCsv('./size.txt')
 except:
@@ -282,14 +205,6 @@ for _m in message:
 
 overTime = len(words) * 2 * size
 
-## get id list
-q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-r_arr = getdetails_qurey('cubist_naver_id', q)
-    
-es_id_list = []
-for _arr in r_arr:
-    _arr = _arr['_source']
-    es_id_list.append(_arr['id'])
 
 #if timer != '': 
 #    timer.cancel()
@@ -464,10 +379,6 @@ for word in words:
         if k == '':
             continue
         
-        # es id 있으면 넘기기
-        if k in es_id_list:
-            continue
-        
         dic = {}
         dic['keyword'] = word
         try:
@@ -488,25 +399,6 @@ for word in words:
             dic['name'] = str(_name).replace('마켓블로그','').replace('공식 블로그','')
             
             datalist.append(dic)
-            
-            
-            _datalist = []
-            _id = k
-            TimeString, TimeValue = DateToString2('now')
-            dic = {}
-            dic['id'] = _id
-            dic['value'] = _name
-            dic['state'] = 'False'
-            dic['date'] = TimeString
-            dic['date2'] = TimeValue
-            dic['keyword'] = word
-            dic['type'] = _type
-            
-            _datalist.append([_id, dic])
-            
-            insertBulk(_datalist, 'cubist_naver_id', esUrl)
-            
-            
             
             f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
             wr = csv.writer(f)
@@ -533,10 +425,6 @@ for word in words:
         if k == '':
             continue
         
-        # es id 있으면 넘기기
-        if k in es_id_list:
-            continue
-        
         dic = {}
         dic['keyword'] = word
         try:
@@ -558,24 +446,6 @@ for word in words:
             dic['name'] = str(_name).replace('마켓블로그','').replace('공식 블로그','')
             
             datalist.append(dic)
-            
-    
-            _datalist = []
-            _id = k
-            TimeString, TimeValue = DateToString2('now')
-            dic = {}
-            dic['id'] = _id
-            dic['value'] = _name
-            dic['state'] = 'False'
-            dic['date'] = TimeString
-            dic['date2'] = TimeValue
-            dic['keyword'] = word
-            dic['type'] = _type
-            
-            _datalist.append([_id, dic])
-            
-            insertBulk(_datalist, 'cubist_naver_id', esUrl)
-            
             
             f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
             wr = csv.writer(f)
