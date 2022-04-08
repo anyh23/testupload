@@ -404,7 +404,7 @@ for idx, _arr in enumerate(id_arr):
 #        방금 내용 es로 전송
         
         _datalist = []
-        _id = s_id+idx
+        _id = s_id + str(idx)
         TimeString, TimeValue = DateToString2('now')
         dic = {}
         dic['id'] = _id
