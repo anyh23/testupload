@@ -332,7 +332,7 @@ qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},
 id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
 
 #오늘 보낼 명수 체크
-#테스트 상위 10명
+#테스트 상위 50명
 
 send_num = 0
 for idx, _arr in enumerate(id_arr):
@@ -453,8 +453,8 @@ for idx, _arr in enumerate(id_arr):
         
 
     send_num+=1
-    if send_num == 31:
-        break
+#    if send_num == 31:
+#        break
         
         
 
