@@ -34,7 +34,8 @@ driver = ''
 DATETYPE = '%Y-%m-%d'
 # DATETYPE2 = '%Y.%m.%d'
 
-esUrl = 'http://3.37.243.132:9200/'
+# esUrl = 'http://3.37.243.132:9200/'
+esUrl = 'http://3.37.243.132:8806/dksdbgus/'
 
 import json
 
