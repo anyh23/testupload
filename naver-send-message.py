@@ -272,128 +272,132 @@ def makeLog(sendId, message, desId, state):
 
 
 
-
-options = webdriver.ChromeOptions() 
-#options.add_argument("--auto-open-devtools-for-tabs")
-
-mobile_emulation = { "deviceName": "Nexus 5" }
-
-options.add_experimental_option("mobileEmulation", mobile_emulation)
-options.add_experimental_option("excludeSwitches", ["enable-automation"])
-options.add_experimental_option('useAutomationExtension', False)
-#driver = webdriver.Chrome(options=options, executable_path=r'../chromedriver_win3298/chromedriver')
-driver = webdriver.Chrome(options=options)
-
-
-driver.get('https://naver.com')
-
-##aside click    
-html = driver.page_source
-soup = BeautifulSoup(html, 'html.parser')
-numList = soup.find_all(class_= 'sch_home_aside')
-
-xpath = xpath_soup(numList[0])
-selenium_element = driver.find_element_by_xpath(xpath)
-selenium_element.click()
-
-
-clickXpathByClass('ss_name', '로그인')
-
-
-qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
-r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
-
-ids = {}
-for _arr in  r_arr:
-    _arr = _arr['_source']
-    _id = _arr['value']
-    _pw = _arr['state']
-    ids[_id] = _pw
-    
-
-import pyperclip
-
-
-#아이디를 덤으로 찾음
-#_a = random.randrange(1, len(ids))
-
-#id = list(ids.keys())[_a]
-#pw = list(ids.values())[_a]
-
-
-id = list(ids.keys())[2]
-pw = list(ids.values())[2]
-
-qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
-r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
-
-
-#오늘 보낸 아이디인지 검증
-
-
-pyperclip.copy(id)
-driver.find_element_by_id('id').send_keys(Keys.CONTROL + 'v')
-pyperclip.copy(pw)
-driver.find_element_by_id('pw').send_keys(Keys.CONTROL + 'v')
-time.sleep(0.7)
-driver.find_element_by_id('upper_login_btn').click()
-time.sleep(1)
-
-
-if driver.current_url == 'https://nid.naver.com/nidlogin.login':
-    print('로그인 실패')
-    makeLog(id, '로그인 실패', '', 'END')
-
 try:
-    ## 휴대전화 번호 확인 페이지 뜰 경우
-    #  https://nid.naver.com/user2/help/contactInfo?m=viewPhoneInfo  
+    id = 'chrome'
+    options = webdriver.ChromeOptions() 
+    #options.add_argument("--auto-open-devtools-for-tabs")
+    
+    mobile_emulation = { "deviceName": "Nexus 5" }
+    
+    options.add_experimental_option("mobileEmulation", mobile_emulation)
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    #driver = webdriver.Chrome(options=options, executable_path=r'../chromedriver_win3298/chromedriver')
+    driver = webdriver.Chrome(options=options)
+    
+    
+    driver.get('https://naver.com')
+    
+    ##aside click    
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
-    numList = soup.find_all(class_= 'btn_next')
+    numList = soup.find_all(class_= 'sch_home_aside')
     
     xpath = xpath_soup(numList[0])
     selenium_element = driver.find_element_by_xpath(xpath)
     selenium_element.click()
-except:
-    pass
-
-if driver.current_url == 'https://m.naver.com/':
-    print('로그인 완료')
-else:
-    #로그인이 안되었을 수 있음
-     makeLog(id, '로그인이 안되었을수 있음', '', 'END')
     
     
-
-
-driver.get('https://m.note.naver.com/mobile/mobileReceiveList.nhn')
-
-
-qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-memo_arr = getdetails_qurey('cubist_naver_memo', qurey, esUrl = esUrl)
-
-memo_list = []
-for _arr in memo_arr:
-    memo_list.append(_arr['_source']['value'])
+    clickXpathByClass('ss_name', '로그인')
     
-qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-message_arr = getdetails_qurey('cubist_naver_message', qurey, esUrl = esUrl)
     
-message_list = []
-for _arr in message_arr:
-    message_list.append(_arr['_source']['value'])
-
-
-qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-keyword_arr = getdetails_qurey('cubist_naver_keyword', qurey, esUrl = esUrl)
+    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
+    r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
     
-keyword_dic = {}
-for _arr in keyword_arr:
-    keyword_dic[_arr['_source']['value']] = _arr['_source']['state']
-
-
-qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
-id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
+    ids = {}
+    for _arr in  r_arr:
+        _arr = _arr['_source']
+        _id = _arr['value']
+        _pw = _arr['state']
+        ids[_id] = _pw
+        
+    
+    import pyperclip
+    
+    
+    #아이디를 덤으로 찾음
+    #_a = random.randrange(1, len(ids))
+    
+    #id = list(ids.keys())[_a]
+    #pw = list(ids.values())[_a]
+    
+    id = ''
+    id = list(ids.keys())[2]
+    pw = list(ids.values())[2]
+    
+    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
+    r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
+    
+    
+    #오늘 보낸 아이디인지 검증
+    
+    
+    pyperclip.copy(id)
+    driver.find_element_by_id('id').send_keys(Keys.CONTROL + 'v')
+    pyperclip.copy(pw)
+    driver.find_element_by_id('pw').send_keys(Keys.CONTROL + 'v')
+    time.sleep(0.7)
+    driver.find_element_by_id('upper_login_btn').click()
+    time.sleep(1)
+    
+    
+    if driver.current_url == 'https://nid.naver.com/nidlogin.login':
+        print('로그인 실패')
+        makeLog(id, '로그인 실패', '', 'END')
+    
+    try:
+        ## 휴대전화 번호 확인 페이지 뜰 경우
+        #  https://nid.naver.com/user2/help/contactInfo?m=viewPhoneInfo  
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
+        numList = soup.find_all(class_= 'btn_next')
+        
+        xpath = xpath_soup(numList[0])
+        selenium_element = driver.find_element_by_xpath(xpath)
+        selenium_element.click()
+    except:
+        pass
+    
+    if driver.current_url == 'https://m.naver.com/':
+        print('로그인 완료')
+    #else:
+    #    #로그인이 안되었을 수 있음
+    #     makeLog(id, '로그인이 안되었을수 있음', '', 'END')
+        
+        
+    
+    
+    driver.get('https://m.note.naver.com/mobile/mobileReceiveList.nhn')
+    
+    
+    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+    memo_arr = getdetails_qurey('cubist_naver_memo', qurey, esUrl = esUrl)
+    
+    memo_list = []
+    for _arr in memo_arr:
+        memo_list.append(_arr['_source']['value'])
+        
+    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+    message_arr = getdetails_qurey('cubist_naver_message', qurey, esUrl = esUrl)
+        
+    message_list = []
+    for _arr in message_arr:
+        message_list.append(_arr['_source']['value'])
+    
+    
+    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+    keyword_arr = getdetails_qurey('cubist_naver_keyword', qurey, esUrl = esUrl)
+        
+    keyword_dic = {}
+    for _arr in keyword_arr:
+        keyword_dic[_arr['_source']['value']] = _arr['_source']['state']
+    
+    
+    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
+    id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
+    
+except Exception as E:
+    makeLog(id, '앞단계 오류 '+str(E), '', 'END')
 
 #오늘 보낼 명수 체크
 #테스트 상위 50명
@@ -535,7 +539,7 @@ for idx, _arr in enumerate(id_arr):
     except Exception as E:
         print(E)
         
-        makeLog(id, E, s_id, 'END')
+        makeLog(id, str(E), s_id, 'END')
        
         
 #        if str(E).find('하루에 보낼 수 있는 쪽지 50개를 모두 발송하셨습니다.') != -1:
