@@ -401,11 +401,11 @@ except Exception as E:
 
 #오늘 보낼 명수 체크
 #테스트 상위 50명
-
-send_num = 0
-for idx, _arr in enumerate(id_arr):
+try:
+    send_num = 0
     
-    try:
+    for idx, _arr in enumerate(id_arr):
+    
         _arr = _arr['_source']
         
         #test id
@@ -536,10 +536,11 @@ for idx, _arr in enumerate(id_arr):
             
             break
         
-    except Exception as E:
-        print(E)
-        
-        makeLog(id, str(E), s_id, 'END')
+except Exception as E:
+    print(E)
+    
+    makeLog(id, str(E), s_id, 'END')
+    
        
         
 #        if str(E).find('하루에 보낼 수 있는 쪽지 50개를 모두 발송하셨습니다.') != -1:
