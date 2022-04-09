@@ -85,6 +85,32 @@ def insertBulk(datalist, esIndex, esUrl = esUrl):
                 make = ''
 
 
+def updateBulk(esIndex, datalist):
+
+    make = ''
+    with requests.Session() as session:
+        for i in range(len(datalist)):
+            
+            _id = str(datalist[i])
+            
+#            dic = {}
+#            dic['doc'] = {key:value}            
+            
+            make += "{ \"update\" : { \"_index\" : \""+esIndex+"\", \"_type\" : \""+esType+"\", \"_id\" : \""+_id+"\" } }\r\n"+str(json.dumps(dic))+"\r\n"
+            if (i != 0 and i%bulkSize == 0 ) or i == len(datalist)-1:
+                print('input',i+1,'개')
+                
+                url = esUrl +'_bulk'
+                headers = {'content-type': "application/x-ndjson"}
+                response = session.request("POST", url, data=make.encode(encoding='utf-8'), headers=headers, verify=False, proxies=proxiess)
+                print(response,'200이면 성공')
+                
+                if str(response).find('200') == -1:
+                    print('error', response.text)
+                #print(response.text)
+                make = '' 
+
+
 
 def DateToString2(value):
     if value == 'now':
@@ -225,6 +251,27 @@ def getMobileBlogNic():
     return -1
 
 
+def makeLog(sendId, message, desId, state):
+    _datalist = []
+    TimeString, TimeValue = DateToString2('now')
+    es_id = TimeString
+    
+    dic = {}
+    dic['id'] = es_id
+    dic['value'] = sendId #쪽지 보내는 아이디
+    dic['state'] = message
+    dic['date'] = TimeString
+    dic['date2'] = TimeValue
+    dic['keyword'] = desId  #쪽지 받는 아이디
+    dic['type'] = state
+    # 'ING'
+    
+    _datalist.append([es_id, dic])
+    
+    insertBulk(_datalist, 'cubist_naver_log', esUrl)
+
+
+
 
 options = webdriver.ChromeOptions() 
 #options.add_argument("--auto-open-devtools-for-tabs")
@@ -250,10 +297,7 @@ selenium_element = driver.find_element_by_xpath(xpath)
 selenium_element.click()
 
 
-
 clickXpathByClass('ss_name', '로그인')
-
-
 
 
 qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
@@ -268,10 +312,24 @@ for _arr in  r_arr:
     
 
 import pyperclip
-import time
+
+
+#아이디를 덤으로 찾음
+#_a = random.randrange(1, len(ids))
+
+#id = list(ids.keys())[_a]
+#pw = list(ids.values())[_a]
+
 
 id = list(ids.keys())[2]
 pw = list(ids.values())[2]
+
+qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
+r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
+
+
+#오늘 보낸 아이디인지 검증
+
 
 pyperclip.copy(id)
 driver.find_element_by_id('id').send_keys(Keys.CONTROL + 'v')
@@ -284,6 +342,7 @@ time.sleep(1)
 
 if driver.current_url == 'https://nid.naver.com/nidlogin.login':
     print('로그인 실패')
+    makeLog(id, '로그인 실패', '', 'END')
 
 try:
     ## 휴대전화 번호 확인 페이지 뜰 경우
@@ -300,6 +359,11 @@ except:
 
 if driver.current_url == 'https://m.naver.com/':
     print('로그인 완료')
+else:
+    #로그인이 안되었을 수 있음
+     makeLog(id, '로그인이 안되었을수 있음', '', 'END')
+    
+    
 
 
 driver.get('https://m.note.naver.com/mobile/mobileReceiveList.nhn')
@@ -336,99 +400,107 @@ id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
 
 send_num = 0
 for idx, _arr in enumerate(id_arr):
-    _arr = _arr['_source']
     
-    #test id
-    des_id = list(ids.keys())[0]
-    
-#    if idx < 30:
-#        continue
-
-    ## 쪽지 쓰기 누르기
-    html = driver.page_source
-    soup = BeautifulSoup(html, 'html.parser')
-    numList = soup.find_all(class_= 'bt')
-    
-    xpath = xpath_soup(numList[0])
-    selenium_element = driver.find_element_by_xpath(xpath)
-    selenium_element.click()
-    
-    time.sleep(1)
-    
-#    _id = _arr['id']
-    s_id = des_id
-    _nicName = _arr['value']        
-    _keyword = _arr['keyword']
-    _type = _arr['type']
-    _keywordNum = keyword_dic.get(_keyword, '1020')
-    
-    #렌덤으로 문장 생성
-    a = random.randrange(0, len(memo_list))
-    b = random.randrange(0, len(message_list))
-    
-    s_memo = memo_list[a]
-    s_message = message_list[b]
-    
-    s_message = s_message.replace('<Memo>', s_memo)
-    
-    s_message = s_message.replace('<Type>', _type).replace('<Name>', _nicName).replace('<Keyword_num>', _keywordNum).replace('<Keyword>', _keyword).replace('<S>', '\n')
-    
-    
-    ## es에 넣기
-    
-    
-    ##보내기
-    pyperclip.copy(s_id)
-    driver.find_element_by_id('who').send_keys(Keys.CONTROL + 'v')
-    time.sleep(0.7)
-    pyperclip.copy(s_message)
-    driver.find_element_by_id('note').send_keys(Keys.CONTROL + 'v')
-    time.sleep(0.7)
-    driver.find_element_by_id('send1').click()
-    time.sleep(3)
-
-
-#    <쪽지 전송 확인>
-    html = driver.page_source
-    soup = BeautifulSoup(html, 'html.parser')
-    numList = soup.find_all(class_= 'ale')
-    
-    if str(numList).find('쪽지가 성공적으로 발송되었습니다.') != -1:
-        print('발송완료')
+    try:
+        _arr = _arr['_source']
         
-#        확인 버튼 누르기
+        #test id
+        des_id = list(ids.keys())[0]
+        
+    #    if idx < 30:
+    #        continue
+    
+        ## 쪽지 쓰기 누르기
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
+        numList = soup.find_all(class_= 'bt')
+        
         xpath = xpath_soup(numList[0])
         selenium_element = driver.find_element_by_xpath(xpath)
         selenium_element.click()
         
-#        방금 내용 es로 전송
+        time.sleep(1)
         
-        _datalist = []
-        _id = s_id + str(idx)
-        TimeString, TimeValue = DateToString2('now')
-        dic = {}
-        dic['id'] = _id
-        dic['value'] = s_message
-        dic['state'] = 'True'
-        dic['date'] = TimeString
-        dic['date2'] = TimeValue
-#        dic['keyword'] = _keyword
-#        dic['type'] = _type
+        s_id = ''
+    #    _id = _arr['id']
+        s_id = des_id
+        _nicName = _arr['value']        
+        _keyword = _arr['keyword']
+        _type = _arr['type']
+        _keywordNum = keyword_dic.get(_keyword, '1020')
         
-        _datalist.append([_id, dic])
+        #렌덤으로 문장 생성
+        a = random.randrange(0, len(memo_list))
+        b = random.randrange(0, len(message_list))
         
-        insertBulk(_datalist, 'cubist_naver_smessage', esUrl)
+        s_memo = memo_list[a]
+        s_message = message_list[b]
+        
+        s_message = s_message.replace('<Memo>', s_memo)
+        
+        s_message = s_message.replace('<Type>', _type).replace('<Name>', _nicName).replace('<Keyword_num>', _keywordNum).replace('<Keyword>', _keyword).replace('<S>', '\n')
         
         
-#        <페이지에서 검색이 안될 경우>
-#        PUT
-#        cubist_naver_smessage/data/_mapping
-#        {"properties":{"id":{"type":"text","fielddata":true}}}
-#        
-    else:
-        print('error')
-        break
-
+        ## es에 넣기
+        
+        
+        ##보내기
+        pyperclip.copy(s_id)
+        driver.find_element_by_id('who').send_keys(Keys.CONTROL + 'v')
+        time.sleep(0.7)
+        pyperclip.copy(s_message)
+        driver.find_element_by_id('note').send_keys(Keys.CONTROL + 'v')
+        time.sleep(0.7)
+        driver.find_element_by_id('send1').click()
+        time.sleep(3)
+    
+    
+    #    <쪽지 전송 확인>
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
+        numList = soup.find_all(class_= 'ale')
+        
+        if str(numList).find('쪽지가 성공적으로 발송되었습니다.') != -1:
+            print('발송완료')
+            
+    #        확인 버튼 누르기
+            xpath = xpath_soup(numList[0])
+            selenium_element = driver.find_element_by_xpath(xpath)
+            selenium_element.click()
+            
+    #        방금 내용 es로 전송
+            
+            _datalist = []
+            _id = s_id + str(idx)
+            TimeString, TimeValue = DateToString2('now')
+            dic = {}
+            dic['id'] = _id
+            dic['value'] = s_message
+            dic['state'] = 'True'
+            dic['date'] = TimeString
+            dic['date2'] = TimeValue
+    #        dic['keyword'] = _keyword
+    #        dic['type'] = _type
+            
+            _datalist.append([_id, dic])
+            
+            insertBulk(_datalist, 'cubist_naver_smessage', esUrl)
+            
+            
+            makeLog(id, str(send_num+1), s_id, 'ING')
+            
+    #        <페이지에서 검색이 안될 경우>
+    #        PUT
+    #        cubist_naver_smessage/data/_mapping
+    #        {"properties":{"id":{"type":"text","fielddata":true}}}
+    #        
+        else:
+            print('error')
+            #다른현상으로 에러
+            #로그를 쌓자
+            
+            makeLog(id, '메시지가 보내지지 않음' +str(send_num+1) , s_id, 'END')
+            break
 
 
 #Traceback (most recent call last):
@@ -452,15 +524,51 @@ for idx, _arr in enumerate(id_arr):
 
         
 
-    send_num+=1
-#    if send_num == 31:
-#        break
+        send_num+=1
+        #정상적으로 50개 전송 완료
+        if send_num == 50:
+            
+            makeLog(id, '쪽지 50개를 모두 발송하셨습니다.', s_id, 'END')
+            
+            break
         
+    except Exception as E:
+        print(E)
         
+        makeLog(id, E, s_id, 'END')
+       
+        
+#        if str(E).find('하루에 보낼 수 있는 쪽지 50개를 모두 발송하셨습니다.') != -1:
+#            
+            
+            ##update
+            ##
+#            
+#            가장 마지막에 보낸 시간
+#            오늘 가장 마지막에 보낸 횟수 
+#            에러 메시지 ??
+#        
+#        
+##        datalist = []
+##        for i in range(3):
+##            dic = {}
+##            dic['doc'] = {:}
+##            datalist.append([id, dic])
+##        
+##        
+##        updateBulk('cubist_naver_sid', datalist):
+#
+#이걸 업데이트 하는 것이 나을까 ??
+#아니면 데이터를 다시 쌓는게 나을까??
+#로그라는 이름의 데이터를 다시 쌓기??
+#
+#셀렉티드 아이디
+#로그 
+#
+#가장 최근 아이디가 에러 이면 다른아이디로
 
-
-        
-        
+            
+            
 
 
 
