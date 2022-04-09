@@ -325,9 +325,8 @@ try:
     id = list(ids.keys())[5]
     pw = list(ids.values())[5]
     
-    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
-    r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
-    
+    #qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
+    #r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
     
     #오늘 보낸 아이디인지 검증
     
@@ -408,7 +407,7 @@ try:
     
         _arr = _arr['_source']
         
-        #test id
+        #test id oyw 삭제 필요
         des_id = list(ids.keys())[0]
         
     #    if idx < 30:
@@ -426,7 +425,7 @@ try:
         time.sleep(1)
         
         s_id = ''
-    #    _id = _arr['id']
+    #    s_id = _arr['id']
         s_id = des_id
         _nicName = _arr['value']        
         _keyword = _arr['keyword']
@@ -490,6 +489,9 @@ try:
             
             insertBulk(_datalist, 'cubist_naver_smessage', esUrl)
             
+            ## 블로거 아이디 쪽지 보냄 표시 필요
+            
+            
             
             makeLog(id, str(send_num+1), s_id, 'ING')
             
@@ -531,7 +533,7 @@ try:
         send_num+=1
         #정상적으로 50개 전송 완료
         if send_num == 50:
-            
+            time.sleep(1)
             makeLog(id, '쪽지 50개를 모두 발송하셨습니다.', s_id, 'END')
             
             break
