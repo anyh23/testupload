@@ -322,8 +322,8 @@ try:
     #pw = list(ids.values())[_a]
     
     id = ''
-    id = list(ids.keys())[2]
-    pw = list(ids.values())[2]
+    id = list(ids.keys())[3]
+    pw = list(ids.values())[3]
     
     qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
     r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
