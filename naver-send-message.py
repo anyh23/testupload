@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 Created on Wed Mar  2 07:58:47 2022
 
@@ -388,9 +388,10 @@ try:
     keyword_arr = getdetails_qurey('cubist_naver_keyword', qurey, esUrl = esUrl)
         
     keyword_dic = {}
+    keyword_new_dic = {} 
     for _arr in keyword_arr:
-        keyword_dic[_arr['_source']['value']] = _arr['_source']['state']
-    
+        keyword_dic[_arr['_source']['value']] = _arr['_source']['type']
+        keyword_new_dic [_arr['_source']['value']] = _arr['_source']['state']    
     
     qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
     id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
@@ -425,12 +426,13 @@ try:
         time.sleep(1)
         
         s_id = ''
-    #    s_id = _arr['id']
-        s_id = des_id
-        _nicName = _arr['value']        
-        _keyword = _arr['keyword']
+        s_id = _arr['id']
+        #s_id = des_id
+        _nicName = _arr['value']
+        _keywordNum = keyword_dic.get(_arr['keyword'], '')
+        _keyword = keyword_new_dic.get(_arr['keyword'])
         _type = _arr['type']
-        _keywordNum = keyword_dic.get(_keyword, '1020')
+        
         
         #렌덤으로 문장 생성
         a = random.randrange(0, len(memo_list))

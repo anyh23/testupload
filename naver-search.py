@@ -269,6 +269,7 @@ except:
     size = readCsv('../size.txt')
 
 size = int(size[0][0])
+#size = 10
 print('검색 사이즈 :', size)
 
 try:
@@ -284,7 +285,7 @@ for _m in message:
 overTime = len(words) * 2 * size
 
 ## get id list
-q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":10000,"sort":[],"aggs":{}}
 r_arr = getdetails_qurey('cubist_naver_id', q)
     
 es_id_list = []
@@ -312,6 +313,8 @@ driver = webdriver.Chrome(options=options)
 
 #driver = webdriver.Chrome()
 
+#words = [['메디큐브 에어샷']]
+
 for word in words:
     word = word[0]
     print(word)
@@ -332,10 +335,21 @@ for word in words:
     numList = soup.find_all('a')
 
 
-    clickList = readCsv('../search.txt')
+#    clickList = readCsv('../search.txt')
     #clickList = ['후기 더보기','참여 콘텐츠 더보기','팁 모음 더보기']
+    
+    q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+    r_arr = getdetails_qurey('cubist_naver_search_add', q)
+    
+    _temp = []
+    
+    for _arr in r_arr:
+        _arr = _arr['_source']
+        _temp.append([_arr['value']])
 
-
+    clickList = _temp
+    print('더 보기 :', clickList)
+    
     _urlList = []
 
     for num in numList:
