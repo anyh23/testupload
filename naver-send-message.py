@@ -5,6 +5,7 @@ Created on Wed Mar  2 07:58:47 2022
 @author: SAKURA-x
 """
 
+from anticaptchaofficial.imagecaptcha import *
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -27,7 +28,7 @@ import threading
 
 
 import urllib.request
-from anticaptchaofficial.imagecaptcha import *
+
 
 
 import warnings
@@ -118,6 +119,9 @@ def updateBulk(esIndex, datalist):
 
 
 def DateToString2(value):
+    
+    import datetime
+    
     if value == 'now':
         value = datetime.datetime.now()
   
@@ -573,6 +577,8 @@ try:
                                 print("task finished with error "+solver.error_code)
                                 continue
     
+                            makeLog(id, 'captcha solving..' +str(send_num+1) , d_id, 'ING')
+        
                             time.sleep(0.5)
                             driver.find_element_by_id('captchavalue').send_keys(captcha_text) 
                             time.sleep(0.5)
