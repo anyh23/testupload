@@ -91,18 +91,18 @@ def updateBulk(esIndex, datalist):
     with requests.Session() as session:
         for i in range(len(datalist)):
             
-            _id = str(datalist[i])
+            _id = str(datalist[i][0])
             
 #            dic = {}
 #            dic['doc'] = {key:value}            
             
-            make += "{ \"update\" : { \"_index\" : \""+esIndex+"\", \"_type\" : \""+esType+"\", \"_id\" : \""+_id+"\" } }\r\n"+str(json.dumps(dic))+"\r\n"
+            make += "{ \"update\" : { \"_index\" : \""+esIndex+"\", \"_type\" : \""+esType+"\", \"_id\" : \""+_id+"\" } }\r\n"+str(json.dumps(datalist[i][1]))+"\r\n"
             if (i != 0 and i%bulkSize == 0 ) or i == len(datalist)-1:
                 print('input',i+1,'개')
                 
                 url = esUrl +'_bulk'
                 headers = {'content-type': "application/x-ndjson"}
-                response = session.request("POST", url, data=make.encode(encoding='utf-8'), headers=headers, verify=False, proxies=proxiess)
+                response = session.request("POST", url, data=make.encode(encoding='utf-8'), headers=headers, verify=False, proxies={})
                 print(response,'200이면 성공')
                 
                 if str(response).find('200') == -1:
@@ -393,7 +393,8 @@ try:
         keyword_dic[_arr['_source']['value']] = _arr['_source']['type']
         keyword_new_dic [_arr['_source']['value']] = _arr['_source']['state']    
     
-    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
+#    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
+    qurey = {"query":{"bool":{"must":[{"match":{"state":"False"}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
     id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
     
 except Exception as E:
@@ -459,56 +460,73 @@ try:
         driver.find_element_by_id('send1').click()
         time.sleep(3)
     
-    
-    #    <쪽지 전송 확인>
-        html = driver.page_source
-        soup = BeautifulSoup(html, 'html.parser')
-        numList = soup.find_all(class_= 'ale')
         
-        if str(numList).find('쪽지가 성공적으로 발송되었습니다.') != -1:
-            print('발송완료')
+        try:
+        #    <쪽지 전송 확인>
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            numList = soup.find_all(class_= 'ale')
             
-    #        확인 버튼 누르기
-            xpath = xpath_soup(numList[0])
-            selenium_element = driver.find_element_by_xpath(xpath)
-            selenium_element.click()
+            if str(numList).find('쪽지가 성공적으로 발송되었습니다.') != -1:
+                print('발송완료')
+                
+        #        확인 버튼 누르기
+                xpath = xpath_soup(numList[0])
+                selenium_element = driver.find_element_by_xpath(xpath)
+                selenium_element.click()
+                
+        #        방금 내용 es로 전송
+                
+                _datalist = []
+                _id = s_id #+ str(idx)
+                TimeString, TimeValue = DateToString2('now')
+                dic = {}
+                dic['id'] = _id
+                dic['value'] = s_message
+                dic['state'] = 'True'
+                dic['date'] = TimeString
+                dic['date2'] = TimeValue
+        #        dic['keyword'] = _keyword
+        #        dic['type'] = _type
+                
+                _datalist.append([_id, dic])
+                
+                insertBulk(_datalist, 'cubist_naver_smessage', esUrl)
+                
+                ## 블로거 아이디 쪽지 보냄 표시 필요
+                makeLog(id, str(send_num+1), s_id, 'ING')
+                
             
-    #        방금 내용 es로 전송
+        #        <페이지에서 검색이 안될 경우>
+        #        PUT
+        #        cubist_naver_smessage/data/_mapping
+        #        {"properties":{"id":{"type":"text","fielddata":true}}}
+        #        
+            else:
+                print('error')
+                #다른현상으로 에러
+                #로그를 쌓자
+                
+                makeLog(id, '메시지가 보내지지 않음' +str(send_num+1) , s_id, 'END')
+                break
+        
+        except Exception as E:
+            print(E)
             
-            _datalist = []
-            _id = s_id + str(idx)
-            TimeString, TimeValue = DateToString2('now')
-            dic = {}
-            dic['id'] = _id
-            dic['value'] = s_message
-            dic['state'] = 'True'
-            dic['date'] = TimeString
-            dic['date2'] = TimeValue
-    #        dic['keyword'] = _keyword
-    #        dic['type'] = _type
+            makeLog(id, str(E), s_id, 'SEND')
             
-            _datalist.append([_id, dic])
+            if str(E).find('쪽지 수신 설정에 따라 쪽지를 수신할 수 없는') != -1:
+                ## 블로거 아이디 쪽지 block 표시 필요
+                datalist = []
+                dic = {}
+                dic['doc'] = {'state':'Block'}
+                datalist.append([s_id, dic])
+                updateBulk('cubist_naver_id', datalist)
+                
+                pass
+            else:
+                break
             
-            insertBulk(_datalist, 'cubist_naver_smessage', esUrl)
-            
-            ## 블로거 아이디 쪽지 보냄 표시 필요
-            
-            
-            
-            makeLog(id, str(send_num+1), s_id, 'ING')
-            
-    #        <페이지에서 검색이 안될 경우>
-    #        PUT
-    #        cubist_naver_smessage/data/_mapping
-    #        {"properties":{"id":{"type":"text","fielddata":true}}}
-    #        
-        else:
-            print('error')
-            #다른현상으로 에러
-            #로그를 쌓자
-            
-            makeLog(id, '메시지가 보내지지 않음' +str(send_num+1) , s_id, 'END')
-            break
 
 
 #Traceback (most recent call last):

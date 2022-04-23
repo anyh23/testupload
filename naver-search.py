@@ -365,7 +365,11 @@ for word in words:
                  
                     time.sleep(0.5)
                 
-                
+    if len(_urlList) == 0:
+        text = 'https://m.search.naver.com/search.naver?where=m_view&sm=mtb_jum&query=' + word
+        _urlList.append(text)
+    
+    
 #    for _url in _urlList:
 #    
 #        if str(_url)[0] == '?':
