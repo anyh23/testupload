@@ -254,10 +254,10 @@ def getMobileBlogNic():
 def makeLog(sendId, message, desId, state):
     _datalist = []
     TimeString, TimeValue = DateToString2('now')
-    ed_id = TimeString
+    es_id = TimeString
     
     dic = {}
-    dic['id'] = ed_id
+    dic['id'] = es_id
     dic['value'] = sendId #쪽지 보내는 아이디
     dic['state'] = message
     dic['date'] = TimeString
@@ -266,7 +266,7 @@ def makeLog(sendId, message, desId, state):
     dic['type'] = state
     # 'ING'
     
-    _datalist.append([ed_id, dic])
+    _datalist.append([es_id, dic])
     
     insertBulk(_datalist, 'cubist_naver_log', esUrl)
 
@@ -425,7 +425,7 @@ try:
         _arr = _arr['_source']
         
         #test id oyw 삭제 필요
-#        ded_id = list(ids.keys())[0]
+#        des_id = list(ids.keys())[0]
         
     #    if idx < 30:
     #        continue
@@ -441,9 +441,9 @@ try:
         
         time.sleep(1)
         
-        d_id = ''
-        d_id = _arr['id']
-        #d_id = ded_id
+        s_id = ''
+        s_id = _arr['id']
+        #s_id = des_id
         _nicName = _arr['value']
         _keywordNum = keyword_dic.get(_arr['keyword'], '')
         _keyword = keyword_new_dic.get(_arr['keyword'])
@@ -466,7 +466,7 @@ try:
         
         
         ##보내기
-        pyperclip.copy(d_id)
+        pyperclip.copy(s_id)
         driver.find_element_by_id('who').send_keys(Keys.CONTROL + 'v')
         time.sleep(0.7)
         pyperclip.copy(s_message)
@@ -493,7 +493,7 @@ try:
         #        방금 내용 es로 전송
                 
                 _datalist = []
-                _id = d_id #+ str(idx)
+                _id = s_id #+ str(idx)
                 TimeString, TimeValue = DateToString2('now')
                 dic = {}
                 dic['id'] = _id
@@ -509,12 +509,12 @@ try:
                 insertBulk(_datalist, 'cubist_naver_smessage', esUrl)
                 
                 ## 블로거 아이디 쪽지 보냄 표시 필요
-                makeLog(id, str(send_num+1), d_id, 'ING')
+                makeLog(id, str(send_num+1), s_id, 'ING')
                 
                 datalist = []
                 dic = {}
                 dic['doc'] = {'state':'True'}
-                datalist.append([d_id, dic])
+                datalist.append([s_id, dic])
                 updateBulk('cubist_naver_id', datalist)
                 
             
@@ -528,7 +528,7 @@ try:
                 #다른현상으로 에러
                 #로그를 쌓자
                 
-                makeLog(id, '메시지가 보내지지 않음' +str(send_num+1) , d_id, 'END')
+                makeLog(id, '메시지가 보내지지 않음' +str(send_num+1) , s_id, 'END')
                 updateIdState(id, 'Block')
                 break
         
@@ -540,10 +540,10 @@ try:
                 datalist = []
                 dic = {}
                 dic['doc'] = {'state':'Block'}
-                datalist.append([d_id, dic])
+                datalist.append([s_id, dic])
                 updateBulk('cubist_naver_id', datalist)
                 
-                makeLog(id, str(E), d_id, 'ING')
+                makeLog(id, str(E), s_id, 'ING')
                 pass
             
             elif str(E).find('수신자 아이디를 확인해 주세요') != -1:
@@ -551,15 +551,15 @@ try:
                 datalist = []
                 dic = {}
                 dic['doc'] = {'state':'Block'}
-                datalist.append([d_id, dic])
+                datalist.append([s_id, dic])
                 updateBulk('cubist_naver_id', datalist)
                 
                 print(1)
                 print('id',id)
                 print('str(E)',str(E))
-                print('d_id',d_id)
+                print('s_id',s_id)
             
-                makeLog(id, str(E), d_id, 'ING')
+                makeLog(id, str(E), s_id, 'ING')
                 print(2)
                 pass
             
@@ -568,10 +568,10 @@ try:
 #                datalist = []
 #                dic = {}
 #                dic['doc'] = {'state':'Block'}
-#                datalist.append([d_id, dic])
+#                datalist.append([s_id, dic])
 #                updateBulk('cubist_naver_id', datalist)
                 
-                makeLog(id, str(E), d_id, 'END')
+                makeLog(id, str(E), s_id, 'END')
                 updateIdState(id, 'True')
                 
                 pass
@@ -580,7 +580,7 @@ try:
             
             
             else:
-                makeLog(id, str(E), d_id, 'END')
+                makeLog(id, str(E), s_id, 'END')
                 updateIdState(id, 'Block')
                 break
             
@@ -611,7 +611,7 @@ try:
         #정상적으로 50개 전송 완료
         if send_num == 50:
             time.sleep(1)
-            makeLog(id, '쪽지 50개를 모두 발송하셨습니다.', d_id, 'END')
+            makeLog(id, '쪽지 50개를 모두 발송하셨습니다.', s_id, 'END')
             updateIdState(id, 'True')
             
             break
@@ -619,7 +619,7 @@ try:
 except Exception as E:
     print(E)
     
-    makeLog(id, str(E), d_id, 'END')
+    makeLog(id, str(E), s_id, 'END')
     updateIdState(id, 'Block')
     
        
@@ -766,10 +766,10 @@ except Exception as E:
 #q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
 #r_arr = getdetails_qurey('cubist_naver_id', q)
 #    
-#ed_id_list = []
+#es_id_list = []
 #for _arr in r_arr:
 #    _arr = _arr['_source']
-#    ed_id_list.append(_arr['id'])
+#    es_id_list.append(_arr['id'])
 #
 ##if timer != '': 
 ##    timer.cancel()
@@ -935,7 +935,7 @@ except Exception as E:
 #            continue
 #        
 #        # es id 있으면 넘기기
-#        if k in ed_id_list:
+#        if k in es_id_list:
 #            continue
 #        
 #        dic = {}
@@ -1004,7 +1004,7 @@ except Exception as E:
 #            continue
 #        
 #        # es id 있으면 넘기기
-#        if k in ed_id_list:
+#        if k in es_id_list:
 #            continue
 #        
 #        dic = {}
