@@ -25,6 +25,11 @@ import random
 import datetime
 import threading
 
+
+import urllib.request
+from anticaptchaofficial.imagecaptcha import *
+
+
 import warnings
 warnings.filterwarnings("ignore")
 chromedriver_autoinstaller.install()
@@ -312,11 +317,14 @@ try:
     r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
     
     ids = {}
+    IDtoIndex = {}
     for _arr in  r_arr:
+        index = _arr['_id']
         _arr = _arr['_source']
         _id = _arr['value']
         _pw = _arr['state']
         ids[_id] = _pw
+        IDtoIndex[_id] = index
         
     
     import pyperclip
@@ -352,7 +360,8 @@ try:
         if driver.current_url == 'https://nid.naver.com/nidlogin.login':
             print('로그인 실패')
             makeLog(id, '로그인 실패', '', 'END')
-            updateIdState(id, 'Block')
+            time.sleep(1)
+            updateIdState(IDtoIndex[id], 'Block')
         
         try:
             ## 휴대전화 번호 확인 페이지 뜰 경우
@@ -415,6 +424,7 @@ except Exception as E:
     makeLog(id, '앞단계 오류 '+str(E), '', 'END')
         
     
+a = 'd9fea22f568b928ee4b3ad266e9d75fc'
 
 #오늘 보낼 명수 체크
 #테스트 상위 50명
@@ -507,10 +517,10 @@ try:
                 _datalist.append([_id, dic])
                 
                 insertBulk(_datalist, 'cubist_naver_smessage', esUrl)
-                
+                time.sleep(1)
                 ## 블로거 아이디 쪽지 보냄 표시 필요
                 makeLog(id, str(send_num+1), d_id, 'ING')
-                
+                time.sleep(1)
                 datalist = []
                 dic = {}
                 dic['doc'] = {'state':'True'}
@@ -528,9 +538,108 @@ try:
                 #다른현상으로 에러
                 #로그를 쌓자
                 
-                makeLog(id, '메시지가 보내지지 않음' +str(send_num+1) , d_id, 'END')
-                time.sleep(1)
-                updateIdState(id, 'Block')
+                html = driver.page_source
+                soup = BeautifulSoup(html, 'html.parser')
+                numList = soup.find_all(id = 'captcha')
+                
+                if str(numList).find('스팸쪽지') != -1:
+                    ##captcha
+                    
+                    while(True):
+                        
+                        driver.find_element_by_xpath('//*[@id="ct"]/div[3]/button').click()
+                                                
+                        html = driver.page_source
+                        soup = BeautifulSoup(html, 'html.parser')
+                        numList = soup.find_all(id = 'captcha')
+                        
+                        im = ''
+                        for num in numList:
+                            im = num.findNext('img')['src']
+                           
+                            solver = imagecaptcha()
+                            solver.set_verbose(1)
+                            solver.set_key(a)
+                            
+                            urllib.request.urlretrieve(im, "captcha.png")
+                            captcha_text = solver.solve_and_return_solution('captcha.png')
+                            
+                            if captcha_text != 0:
+                                print("captcha text "+captcha_text)
+                            else:
+                                print("task finished with error "+solver.error_code)
+                                continue
+    
+                            time.sleep(0.5)
+                            driver.find_element_by_id('captchavalue').send_keys(captcha_text) 
+                            time.sleep(0.5)
+                            driver.find_element_by_id('captchaSend').click()
+                            time.sleep(0.5)
+                            try:
+                                driver.find_element_by_css_selector('body').send_keys(Keys.ENTER)
+                            except:
+                                pass
+                            
+                            time.sleep(3)
+                            
+                            html = driver.page_source
+                            soup = BeautifulSoup(html, 'html.parser')
+                            numList = soup.find_all(id = 'captcha')
+                            if str(numList).find('스팸쪽지') != -1:
+                                pass
+                            else:
+                                break
+                    
+                    makeLog(id, '스팸 방지 문자열 해결' +str(send_num+1) , d_id, 'ING')
+                    
+                    if str(numList).find('쪽지가 성공적으로 발송되었습니다.') != -1:
+                        print('발송완료')
+                        
+                #        확인 버튼 누르기
+                        xpath = xpath_soup(numList[0])
+                        selenium_element = driver.find_element_by_xpath(xpath)
+                        selenium_element.click()
+                        
+                #        방금 내용 es로 전송
+                        
+                        _datalist = []
+                        _id = d_id #+ str(idx)
+                        TimeString, TimeValue = DateToString2('now')
+                        dic = {}
+                        dic['id'] = _id
+                        dic['value'] = s_message
+                        dic['state'] = 'True'
+                        dic['date'] = TimeString
+                        dic['date2'] = TimeValue
+                #        dic['keyword'] = _keyword
+                #        dic['type'] = _type
+                        
+                        _datalist.append([_id, dic])
+                        
+                        insertBulk(_datalist, 'cubist_naver_smessage', esUrl)
+                        
+                        time.sleep(1)
+                        ## 블로거 아이디 쪽지 보냄 표시 필요
+                        makeLog(id, str(send_num+1), d_id, 'ING')
+                        
+                        time.sleep(1)
+                        datalist = []
+                        dic = {}
+                        dic['doc'] = {'state':'True'}
+                        datalist.append([d_id, dic])
+                        updateBulk('cubist_naver_id', datalist)
+                
+                else:
+                    makeLog(id, '메시지가 보내지지 않음' +str(send_num+1) , d_id, 'END')
+                    time.sleep(1)
+                    updateIdState(IDtoIndex[id], 'Block')
+                
+               
+                
+                
+                
+                
+                
                 break
         
         except Exception as E:
@@ -576,7 +685,7 @@ try:
                 
                 makeLog(id, str(E), d_id, 'END')
                 time.sleep(1)
-                updateIdState(id, 'True')
+                updateIdState(IDtoIndex[id], 'True')
                 
                 break
             
@@ -586,7 +695,7 @@ try:
             else:
                 makeLog(id, str(E), d_id, 'END')
                 time.sleep(1)
-                updateIdState(id, 'Block')
+                updateIdState(IDtoIndex[id], 'Block')
                 break
             
 
@@ -618,7 +727,7 @@ try:
             time.sleep(1)
             makeLog(id, '쪽지 50개를 모두 발송하셨습니다.', d_id, 'END')
             time.sleep(1)
-            updateIdState(id, 'True')
+            updateIdState(IDtoIndex[id], 'True')
             
             break
         
@@ -627,7 +736,7 @@ except Exception as E:
     
     makeLog(id, str(E), d_id, 'END')
     time.sleep(1)
-    updateIdState(id, 'Block')
+    updateIdState(IDtoIndex[id], 'Block')
     
        
         
