@@ -547,8 +547,11 @@ try:
                     
                     while(True):
                         
-                        driver.find_element_by_xpath('//*[@id="ct"]/div[3]/button').click()
-                                                
+                        try:
+                            driver.find_element_by_xpath('//*[@id="ct"]/div[3]/button').click()
+                        except:
+                            break
+                        
                         html = driver.page_source
                         soup = BeautifulSoup(html, 'html.parser')
                         numList = soup.find_all(id = 'captcha')
