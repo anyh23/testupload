@@ -554,7 +554,9 @@ try:
                 datalist.append([s_id, dic])
                 updateBulk('cubist_naver_id', datalist)
                 
+                print(1)
                 makeLog(id, str(E), s_id, 'ING')
+                print(2)
                 pass
             
             elif str(E).find('하루에 보낼 수 있는 쪽지') != -1:
