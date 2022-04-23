@@ -556,6 +556,8 @@ try:
                         except:
                             break
                         
+                        time.sleep(2)
+                        
                         html = driver.page_source
                         soup = BeautifulSoup(html, 'html.parser')
                         numList = soup.find_all(id = 'captcha')
@@ -569,6 +571,8 @@ try:
                             solver.set_key(ff)
                             
                             urllib.request.urlretrieve(im, "captcha.png")
+                            time.sleep(1)
+                            
                             captcha_text = solver.solve_and_return_solution('captcha.png')
                             
                             if captcha_text != 0:
