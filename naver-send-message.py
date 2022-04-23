@@ -543,7 +543,7 @@ try:
                 datalist.append([d_id, dic])
                 updateBulk('cubist_naver_id', datalist)
                 
-                makeLog(id, str(E), d_id, 'ING')
+                makeLog(id, str(E)[:30], d_id, 'ING')
                 pass
             
             elif str(E).find('수신자 아이디를 확인해 주세요') != -1:
@@ -559,7 +559,7 @@ try:
                 print('str(E)',str(E))
                 print('d_id',d_id)
             
-                makeLog(id, str(E), d_id, 'ING')
+                makeLog(id, str(E)[:30], d_id, 'ING')
                 print(2)
                 pass
             
