@@ -551,6 +551,8 @@ try:
                     
                     while(True):
                         
+                        time.sleep(2)
+                        
                         try:
                             driver.find_element_by_xpath('//*[@id="ct"]/div[3]/button').click()
                         except:
@@ -598,6 +600,7 @@ try:
                             html = driver.page_source
                             soup = BeautifulSoup(html, 'html.parser')
                             numList = soup.find_all(id = 'captcha')
+                            
                             if str(numList).find('스팸쪽지') != -1:
                                 pass
                             else:
