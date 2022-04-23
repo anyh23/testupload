@@ -664,7 +664,7 @@ try:
                 
                 driver.get('https://m.note.naver.com/mobile/mobileReceiveList.nhn')
                 
-                pass
+                continue
             
             elif str(E).find('수신자 아이디를 확인해 주세요') != -1:
                 ## 블로거 아이디 쪽지 block 표시 필요
@@ -680,7 +680,7 @@ try:
                 
                 driver.get('https://m.note.naver.com/mobile/mobileReceiveList.nhn')
                 
-                pass
+                continue
             
             elif str(E).find('하루에 보낼 수 있는 쪽지') != -1:
                 ## 블로거 아이디 쪽지 block 표시 필요
@@ -731,6 +731,7 @@ try:
         send_num+=1
         #정상적으로 50개 전송 완료
         if send_num == 50:
+            print('쪽지 50개를 모두 발송하셨습니다.')
             time.sleep(1)
             makeLog(id, '쪽지 50개를 모두 발송하셨습니다.', d_id, 'END')
             time.sleep(1)
