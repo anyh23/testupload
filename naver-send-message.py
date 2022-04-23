@@ -424,7 +424,7 @@ except Exception as E:
     makeLog(id, '앞단계 오류 '+str(E), '', 'END')
         
     
-a = 'd9fea22f568b928ee4b3ad266e9d75fc'
+ff = 'd9fea22f568b928ee4b3ad266e9d75fc'
 
 #오늘 보낼 명수 체크
 #테스트 상위 50명
@@ -559,7 +559,7 @@ try:
                            
                             solver = imagecaptcha()
                             solver.set_verbose(1)
-                            solver.set_key(a)
+                            solver.set_key(ff)
                             
                             urllib.request.urlretrieve(im, "captcha.png")
                             captcha_text = solver.solve_and_return_solution('captcha.png')
