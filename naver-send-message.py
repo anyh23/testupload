@@ -643,13 +643,7 @@ try:
                     time.sleep(1)
                     updateIdState(IDtoIndex[id], 'Block')
                 
-               
-                
-                
-                
-                
-                
-                break
+                    break
         
         except Exception as E:
             print(E)
