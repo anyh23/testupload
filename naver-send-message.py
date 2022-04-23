@@ -270,6 +270,12 @@ def makeLog(sendId, message, desId, state):
     
     insertBulk(_datalist, 'cubist_naver_log', esUrl)
 
+def updateIdState(_id, state):
+    datalist = []
+    dic = {}
+    dic['doc'] = {'type': state}
+    datalist.append([_id, dic])
+    updateBulk('cubist_naver_sid', datalist)
 
 
 try:
@@ -301,7 +307,8 @@ try:
     clickXpathByClass('ss_name', '로그인')
     
     
-    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
+    qurey = {"query":{"bool":{"must":[{"match":{"type":"False"}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+#    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
     r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
     
     ids = {}
@@ -315,90 +322,99 @@ try:
     import pyperclip
     
     
-    #아이디를 덤으로 찾음
-    #_a = random.randrange(1, len(ids))
+    if len(ids) != 0:
     
-    #id = list(ids.keys())[_a]
-    #pw = list(ids.values())[_a]
-    
-    id = ''
-    id = list(ids.keys())[5]
-    pw = list(ids.values())[5]
-    
-    #qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
-    #r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
-    
-    #오늘 보낸 아이디인지 검증
-    
-    
-    pyperclip.copy(id)
-    driver.find_element_by_id('id').send_keys(Keys.CONTROL + 'v')
-    pyperclip.copy(pw)
-    driver.find_element_by_id('pw').send_keys(Keys.CONTROL + 'v')
-    time.sleep(0.7)
-    driver.find_element_by_id('upper_login_btn').click()
-    time.sleep(1)
-    
-    
-    if driver.current_url == 'https://nid.naver.com/nidlogin.login':
-        print('로그인 실패')
-        makeLog(id, '로그인 실패', '', 'END')
-    
-    try:
-        ## 휴대전화 번호 확인 페이지 뜰 경우
-        #  https://nid.naver.com/user2/help/contactInfo?m=viewPhoneInfo  
-        html = driver.page_source
-        soup = BeautifulSoup(html, 'html.parser')
-        numList = soup.find_all(class_= 'btn_next')
+        #아이디를 덤으로 찾음
+        #_a = random.randrange(1, len(ids))
         
-        xpath = xpath_soup(numList[0])
-        selenium_element = driver.find_element_by_xpath(xpath)
-        selenium_element.click()
-    except:
-        pass
-    
-    if driver.current_url == 'https://m.naver.com/':
-        print('로그인 완료')
-    #else:
-    #    #로그인이 안되었을 수 있음
-    #     makeLog(id, '로그인이 안되었을수 있음', '', 'END')
+        #id = list(ids.keys())[_a]
+        #pw = list(ids.values())[_a]
+        
+        id = ''
+        id = list(ids.keys())[0]
+        pw = list(ids.values())[0]
+        
+        #qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
+        #r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
+        
+        #오늘 보낸 아이디인지 검증
         
         
-    
-    
-    driver.get('https://m.note.naver.com/mobile/mobileReceiveList.nhn')
-    
-    
-    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-    memo_arr = getdetails_qurey('cubist_naver_memo', qurey, esUrl = esUrl)
-    
-    memo_list = []
-    for _arr in memo_arr:
-        memo_list.append(_arr['_source']['value'])
+        pyperclip.copy(id)
+        driver.find_element_by_id('id').send_keys(Keys.CONTROL + 'v')
+        pyperclip.copy(pw)
+        driver.find_element_by_id('pw').send_keys(Keys.CONTROL + 'v')
+        time.sleep(0.7)
+        driver.find_element_by_id('upper_login_btn').click()
+        time.sleep(1)
         
-    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-    message_arr = getdetails_qurey('cubist_naver_message', qurey, esUrl = esUrl)
         
-    message_list = []
-    for _arr in message_arr:
-        message_list.append(_arr['_source']['value'])
-    
-    
-    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-    keyword_arr = getdetails_qurey('cubist_naver_keyword', qurey, esUrl = esUrl)
+        if driver.current_url == 'https://nid.naver.com/nidlogin.login':
+            print('로그인 실패')
+            makeLog(id, '로그인 실패', '', 'END')
+            updateIdState(id, 'Block')
         
-    keyword_dic = {}
-    keyword_new_dic = {} 
-    for _arr in keyword_arr:
-        keyword_dic[_arr['_source']['value']] = _arr['_source']['type']
-        keyword_new_dic [_arr['_source']['value']] = _arr['_source']['state']    
-    
-#    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
-    qurey = {"query":{"bool":{"must":[{"match":{"state":"False"}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
-    id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
+        try:
+            ## 휴대전화 번호 확인 페이지 뜰 경우
+            #  https://nid.naver.com/user2/help/contactInfo?m=viewPhoneInfo  
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            numList = soup.find_all(class_= 'btn_next')
+            
+            xpath = xpath_soup(numList[0])
+            selenium_element = driver.find_element_by_xpath(xpath)
+            selenium_element.click()
+        except:
+            pass
+        
+        if driver.current_url == 'https://m.naver.com/':
+            print('로그인 완료')
+        #else:
+        #    #로그인이 안되었을 수 있음
+        #     makeLog(id, '로그인이 안되었을수 있음', '', 'END')
+            
+            
+        
+        
+        driver.get('https://m.note.naver.com/mobile/mobileReceiveList.nhn')
+        
+        
+        qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+        memo_arr = getdetails_qurey('cubist_naver_memo', qurey, esUrl = esUrl)
+        
+        memo_list = []
+        for _arr in memo_arr:
+            memo_list.append(_arr['_source']['value'])
+            
+        qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+        message_arr = getdetails_qurey('cubist_naver_message', qurey, esUrl = esUrl)
+            
+        message_list = []
+        for _arr in message_arr:
+            message_list.append(_arr['_source']['value'])
+        
+        
+        qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+        keyword_arr = getdetails_qurey('cubist_naver_keyword', qurey, esUrl = esUrl)
+            
+        keyword_dic = {}
+        keyword_new_dic = {} 
+        for _arr in keyword_arr:
+            keyword_dic[_arr['_source']['value']] = _arr['_source']['type']
+            keyword_new_dic [_arr['_source']['value']] = _arr['_source']['state']    
+        
+    #    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
+        qurey = {"query":{"bool":{"must":[{"match":{"state":"False"}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
+        id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
+        
+    else:
+        #id 가 없을 경우
+        id_arr = []
     
 except Exception as E:
     makeLog(id, '앞단계 오류 '+str(E), '', 'END')
+        
+    
 
 #오늘 보낼 명수 체크
 #테스트 상위 50명
@@ -406,7 +422,6 @@ try:
     send_num = 0
     
     for idx, _arr in enumerate(id_arr):
-    
         _arr = _arr['_source']
         
         #test id oyw 삭제 필요
@@ -514,6 +529,7 @@ try:
                 #로그를 쌓자
                 
                 makeLog(id, '메시지가 보내지지 않음' +str(send_num+1) , s_id, 'END')
+                updateIdState(id, 'Block')
                 break
         
         except Exception as E:
@@ -531,6 +547,7 @@ try:
                 pass
             else:
                 makeLog(id, str(E), s_id, 'END')
+                updateIdState(id, 'Block')
                 break
             
 
@@ -561,6 +578,7 @@ try:
         if send_num == 50:
             time.sleep(1)
             makeLog(id, '쪽지 50개를 모두 발송하셨습니다.', s_id, 'END')
+            updateIdState(id, 'True')
             
             break
         
@@ -568,6 +586,7 @@ except Exception as E:
     print(E)
     
     makeLog(id, str(E), s_id, 'END')
+    updateIdState(id, 'Block')
     
        
         
