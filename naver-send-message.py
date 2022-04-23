@@ -545,6 +545,34 @@ try:
                 
                 makeLog(id, str(E), s_id, 'ING')
                 pass
+            
+            elif str(E).find('수신자 아이디를 확인해 주세요') != -1:
+                ## 블로거 아이디 쪽지 block 표시 필요
+                datalist = []
+                dic = {}
+                dic['doc'] = {'state':'Block'}
+                datalist.append([s_id, dic])
+                updateBulk('cubist_naver_id', datalist)
+                
+                makeLog(id, str(E), s_id, 'ING')
+                pass
+            
+            elif str(E).find('하루에 보낼 수 있는 쪽지') != -1:
+                ## 블로거 아이디 쪽지 block 표시 필요
+#                datalist = []
+#                dic = {}
+#                dic['doc'] = {'state':'Block'}
+#                datalist.append([s_id, dic])
+#                updateBulk('cubist_naver_id', datalist)
+                
+                makeLog(id, str(E), s_id, 'END')
+                updateIdState(id, 'True')
+                
+                pass
+            
+
+            
+            
             else:
                 makeLog(id, str(E), s_id, 'END')
                 updateIdState(id, 'Block')
