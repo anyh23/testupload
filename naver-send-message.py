@@ -606,7 +606,9 @@ try:
                             else:
                                 break
                     
+                    print('00')
                     makeLog(id, '스팸 방지 문자열 해결' +str(send_num+1) , d_id, 'ING')
+                    print('11')
                     
                     if str(numList).find('쪽지가 성공적으로 발송되었습니다.') != -1:
                         print('발송완료')
@@ -631,7 +633,6 @@ try:
                 #        dic['type'] = _type
                         
                         _datalist.append([_id, dic])
-                        
                         insertBulk(_datalist, 'cubist_naver_smessage', esUrl)
                         
                         time.sleep(1)
@@ -653,7 +654,7 @@ try:
                     break
         
         except Exception as E:
-            print(E)
+            print('S',E)
             
             if str(E).find('쪽지 수신 설정에 따라 쪽지를 수신할 수 없는') != -1:
                 ## 블로거 아이디 쪽지 block 표시 필요
