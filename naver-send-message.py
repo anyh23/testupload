@@ -529,6 +529,7 @@ try:
                 #로그를 쌓자
                 
                 makeLog(id, '메시지가 보내지지 않음' +str(send_num+1) , d_id, 'END')
+                time.sleep(1)
                 updateIdState(id, 'Block')
                 break
         
@@ -542,8 +543,11 @@ try:
                 dic['doc'] = {'state':'Block'}
                 datalist.append([d_id, dic])
                 updateBulk('cubist_naver_id', datalist)
+                time.sleep(1)
+                makeLog(id, str(E), d_id, 'ING')
                 
-                makeLog(id, str(E)[:30], d_id, 'ING')
+                driver.get('https://m.note.naver.com/mobile/mobileReceiveList.nhn')
+                
                 pass
             
             elif str(E).find('수신자 아이디를 확인해 주세요') != -1:
@@ -554,13 +558,12 @@ try:
                 datalist.append([d_id, dic])
                 updateBulk('cubist_naver_id', datalist)
                 
-                print(1)
-                print('id',id)
-                print('str(E)',str(E))
-                print('d_id',d_id)
-            
-                makeLog(id, str(E)[:30], d_id, 'ING')
-                print(2)
+                time.sleep(1)
+                
+                makeLog(id, str(E), d_id, 'ING')
+                
+                driver.get('https://m.note.naver.com/mobile/mobileReceiveList.nhn')
+                
                 pass
             
             elif str(E).find('하루에 보낼 수 있는 쪽지') != -1:
@@ -572,15 +575,17 @@ try:
 #                updateBulk('cubist_naver_id', datalist)
                 
                 makeLog(id, str(E), d_id, 'END')
+                time.sleep(1)
                 updateIdState(id, 'True')
                 
-                pass
+                break
             
 
             
             
             else:
                 makeLog(id, str(E), d_id, 'END')
+                time.sleep(1)
                 updateIdState(id, 'Block')
                 break
             
@@ -612,6 +617,7 @@ try:
         if send_num == 50:
             time.sleep(1)
             makeLog(id, '쪽지 50개를 모두 발송하셨습니다.', d_id, 'END')
+            time.sleep(1)
             updateIdState(id, 'True')
             
             break
@@ -620,6 +626,7 @@ except Exception as E:
     print(E)
     
     makeLog(id, str(E), d_id, 'END')
+    time.sleep(1)
     updateIdState(id, 'Block')
     
        
