@@ -654,6 +654,7 @@ try:
                         updateBulk('cubist_naver_id', datalist)
                     
                     else:
+                        ## 어떤이유로 캡챠 풀었을때 쪽지가 안갈 경우
                         
                         time.sleep(1)
                         
@@ -664,6 +665,7 @@ try:
                         updateBulk('cubist_naver_id', datalist)
                         
                         time.sleep(1)
+                        makeLog(id, '쪽지를 발신할 수 없는...', d_id, 'ING')
                         
                         print('22')
                         ##list out of index
