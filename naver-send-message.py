@@ -410,7 +410,7 @@ try:
         _arr = _arr['_source']
         
         #test id oyw 삭제 필요
-        des_id = list(ids.keys())[0]
+#        des_id = list(ids.keys())[0]
         
     #    if idx < 30:
     #        continue
@@ -496,6 +496,12 @@ try:
                 ## 블로거 아이디 쪽지 보냄 표시 필요
                 makeLog(id, str(send_num+1), s_id, 'ING')
                 
+                datalist = []
+                dic = {}
+                dic['doc'] = {'state':'True'}
+                datalist.append([s_id, dic])
+                updateBulk('cubist_naver_id', datalist)
+                
             
         #        <페이지에서 검색이 안될 경우>
         #        PUT
@@ -513,8 +519,6 @@ try:
         except Exception as E:
             print(E)
             
-            makeLog(id, str(E), s_id, 'SEND')
-            
             if str(E).find('쪽지 수신 설정에 따라 쪽지를 수신할 수 없는') != -1:
                 ## 블로거 아이디 쪽지 block 표시 필요
                 datalist = []
@@ -523,8 +527,10 @@ try:
                 datalist.append([s_id, dic])
                 updateBulk('cubist_naver_id', datalist)
                 
+                makeLog(id, str(E), s_id, 'ING')
                 pass
             else:
+                makeLog(id, str(E), s_id, 'END')
                 break
             
 

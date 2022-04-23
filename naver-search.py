@@ -225,6 +225,26 @@ def getMobileBlogNic():
     return -1
 
 
+def makeLog(message, _type):
+    _datalist = []
+    TimeString, TimeValue = DateToString2('now')
+    es_id = TimeString
+    
+    dic = {}
+    dic['id'] = es_id
+    dic['value'] = 'search' #쪽지 보내는 아이디
+    dic['state'] = message
+    dic['date'] = TimeString
+    dic['date2'] = TimeValue
+    dic['keyword'] = ''  #쪽지 받는 아이디
+    dic['type'] = _type
+    # 'ING'
+    
+    _datalist.append([es_id, dic])
+    
+    insertBulk(_datalist, 'cubist_naver_log', esUrl)
+
+
 allCount = 0
 ipAddr = ''
 timer = ''
@@ -243,378 +263,390 @@ timer = ''
         # f.close()
 
 
-
-words = readCsv('../keyword.txt')
-print('검색어 :', words)
-
-if words[0][0].find('auto')!= -1:
-    print('auto mode start')
-
-    q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-    r_arr = getdetails_qurey('cubist_naver_keyword', q)
+try:
     
-    _temp = []
+    startTime = time.time()
     
-    for _arr in r_arr:
-        _arr = _arr['_source']
-        _temp.append([_arr['value']])
-
-    words = _temp
+    words = readCsv('../keyword.txt')
     print('검색어 :', words)
-
-
-try:
-    size = readCsv('./size.txt')
-except:
-    size = readCsv('../size.txt')
-
-size = int(size[0][0])
-#size = 10
-print('검색 사이즈 :', size)
-
-try:
-    message = readCsv('./message.txt')
-except:
-    message = readCsv('../message.txt')
-
-text = ''
-for _m in message:
-    text += (_m[0])
-
-
-overTime = len(words) * 2 * size
-
-## get id list
-q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":10000,"sort":[],"aggs":{}}
-r_arr = getdetails_qurey('cubist_naver_id', q)
     
-es_id_list = []
-for _arr in r_arr:
-    _arr = _arr['_source']
-    es_id_list.append(_arr['id'])
-
-#if timer != '': 
-#    timer.cancel()
-#
-#timer = threading.Timer(overTime, overTimer)
-#timer.start()
-
-
-options = webdriver.ChromeOptions() 
-#options.add_argument("--auto-open-devtools-for-tabs")
-
-mobile_emulation = { "deviceName": "Nexus 5" }
-
-options.add_experimental_option("mobileEmulation", mobile_emulation)
-options.add_experimental_option("excludeSwitches", ["enable-automation"])
-options.add_experimental_option('useAutomationExtension', False)
-#driver = webdriver.Chrome(options=options, executable_path=r'../chromedriver_win3298/chromedriver')
-driver = webdriver.Chrome(options=options)
-
-#driver = webdriver.Chrome()
-
-#words = [['메디큐브 에어샷']]
-
-for word in words:
-    word = word[0]
-    print(word)
+    if words[0][0].find('auto')!= -1:
+        print('auto mode start')
+    
+        q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+        r_arr = getdetails_qurey('cubist_naver_keyword', q)
+        
+        _temp = []
+        
+        for _arr in r_arr:
+            _arr = _arr['_source']
+            _temp.append([_arr['value']])
+    
+        words = _temp
+        print('검색어 :', words)
     
     
-    url = 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query='+word
-    driver.get(url)
-
-    for _ in range(3):
-        ActionChains(driver).send_keys(Keys.END).perform()
-        time.sleep(0.5)
-
-
-     
-    html = driver.page_source
-    soup = BeautifulSoup(html, 'html.parser')
-    #numList = soup.find_all(class_= 'api_more_wrap')
-    numList = soup.find_all('a')
-
-
-#    clickList = readCsv('../search.txt')
-    #clickList = ['후기 더보기','참여 콘텐츠 더보기','팁 모음 더보기']
+    try:
+        size = readCsv('./size.txt')
+    except:
+        size = readCsv('../size.txt')
     
-    q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-    r_arr = getdetails_qurey('cubist_naver_search_add', q)
+    size = int(size[0][0])
+    #size = 10
+    print('검색 사이즈 :', size)
     
-    _temp = []
+    try:
+        message = readCsv('./message.txt')
+    except:
+        message = readCsv('../message.txt')
     
+    text = ''
+    for _m in message:
+        text += (_m[0])
+    
+    
+    overTime = len(words) * 2 * size
+    
+    ## get id list
+    q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":10000,"sort":[],"aggs":{}}
+    r_arr = getdetails_qurey('cubist_naver_id', q)
+        
+    es_id_list = []
     for _arr in r_arr:
         _arr = _arr['_source']
-        _temp.append([_arr['value']])
-
-    clickList = _temp
-    print('더 보기 :', clickList)
+        es_id_list.append(_arr['id'])
     
-    _urlList = []
-
-    for num in numList:
-#        num = num.findNext('a')
-        for click in clickList:
-            if str(num.getText()).find(click[0]) != -1:
-                if str(num['href']).find('https://in.naver.com/') == -1:
-                    _urlList.append(num['href'])
-                #xpath = xpath_soup(num)
-                #selenium_element = driver.find_element_by_xpath(xpath)
-                #    ActionChains(driver).move_to_element(selenium_element).perform()
-                #   selenium_element.click()
-                 
-                    time.sleep(0.5)
-                
-    if len(_urlList) == 0:
-        text = 'https://m.search.naver.com/search.naver?where=m_view&sm=mtb_jum&query=' + word
-        _urlList.append(text)
+    #if timer != '': 
+    #    timer.cancel()
+    #
+    #timer = threading.Timer(overTime, overTimer)
+    #timer.start()
     
     
-#    for _url in _urlList:
-#    
-#        if str(_url)[0] == '?':
-#            _url = 'https://search.naver.com/search.naver'+_url
-#        
-#        driver.get(_url)
-#        
-#        html = driver.page_source
-#        soup = BeautifulSoup(html, 'html.parser')
-#        numList = soup.find_all(class_= 'group_inner')
-#        
-#        for num in numList:
-#            #print(num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1])
-#            f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-#            wr = csv.writer(f)
-#            wr.writerow([word, num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1]])
-#            f.close()
-
-    NaverIDtoBlog_all = {}
-    NaverIDtoIn_all = {}
     
-    for _url in _urlList:
+    options = webdriver.ChromeOptions() 
+    #options.add_argument("--auto-open-devtools-for-tabs")
     
-        if str(_url)[0] == '?':
-#            _url = 'https://search.naver.com/search.naver'+_url
-        #모바일
-            _url = 'https://m.search.naver.com/search.naver'+_url
-        driver.get(_url)
+    mobile_emulation = { "deviceName": "Nexus 5" }
+    
+    options.add_experimental_option("mobileEmulation", mobile_emulation)
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    #driver = webdriver.Chrome(options=options, executable_path=r'../chromedriver_win3298/chromedriver')
+    driver = webdriver.Chrome(options=options)
+    
+    #driver = webdriver.Chrome()
+    
+    #words = [['메디큐브 에어샷']]
+    
+    for word in words:
+        word = word[0]
+        print(word)
         
-        for _ in range(5):
+        
+        url = 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query='+word
+        driver.get(url)
+    
+        for _ in range(3):
             ActionChains(driver).send_keys(Keys.END).perform()
-            time.sleep(1)
-        
+            time.sleep(0.5)
+    
+    
+         
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
+        #numList = soup.find_all(class_= 'api_more_wrap')
         numList = soup.find_all('a')
+    
+    
+    #    clickList = readCsv('../search.txt')
+        #clickList = ['후기 더보기','참여 콘텐츠 더보기','팁 모음 더보기']
         
-        getNaverIDtoIn = []
-        getNaverIDtoBlog = []
+        q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+        r_arr = getdetails_qurey('cubist_naver_search_add', q)
         
-        except_words = ['naver_search', 'MyBlog.naver', 'nidlogin.login', 'influencer_search', 'nidlogin.login', 'challenge']
+        _temp = []
         
+        for _arr in r_arr:
+            _arr = _arr['_source']
+            _temp.append([_arr['value']])
+    
+        clickList = _temp
+        print('더 보기 :', clickList)
+        
+        _urlList = []
+    
         for num in numList:
-            try:
-                if str(num['href']).find('https://in.naver.com/') != -1:
-#                    for _word in except_words:
-#                        if str(num['href']).find(_word) == -1:
-                    getNaverIDtoIn.append(num['href'])
+    #        num = num.findNext('a')
+            for click in clickList:
+                if str(num.getText()).find(click[0]) != -1:
+                    if str(num['href']).find('https://in.naver.com/') == -1:
+                        _urlList.append(num['href'])
+                    #xpath = xpath_soup(num)
+                    #selenium_element = driver.find_element_by_xpath(xpath)
+                    #    ActionChains(driver).move_to_element(selenium_element).perform()
+                    #   selenium_element.click()
+                     
+                        time.sleep(0.5)
+                    
+        if len(_urlList) == 0:
+            text = 'https://m.search.naver.com/search.naver?where=m_view&sm=mtb_jum&query=' + word
+            _urlList.append(text)
+        
+        
+    #    for _url in _urlList:
+    #    
+    #        if str(_url)[0] == '?':
+    #            _url = 'https://search.naver.com/search.naver'+_url
+    #        
+    #        driver.get(_url)
+    #        
+    #        html = driver.page_source
+    #        soup = BeautifulSoup(html, 'html.parser')
+    #        numList = soup.find_all(class_= 'group_inner')
+    #        
+    #        for num in numList:
+    #            #print(num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1])
+    #            f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+    #            wr = csv.writer(f)
+    #            wr.writerow([word, num.findNext('a').getText(), num.findNext('a')['href'], str(num.findNext('a')['href']).replace('https://','').split('/')[1]])
+    #            f.close()
+    
+        NaverIDtoBlog_all = {}
+        NaverIDtoIn_all = {}
+        
+        for _url in _urlList:
+        
+            if str(_url)[0] == '?':
+    #            _url = 'https://search.naver.com/search.naver'+_url
+            #모바일
+                _url = 'https://m.search.naver.com/search.naver'+_url
+            driver.get(_url)
+            
+            for _ in range(5):
+                ActionChains(driver).send_keys(Keys.END).perform()
+                time.sleep(1)
+            
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            numList = soup.find_all('a')
+            
+            getNaverIDtoIn = []
+            getNaverIDtoBlog = []
+            
+            except_words = ['naver_search', 'MyBlog.naver', 'nidlogin.login', 'influencer_search', 'nidlogin.login', 'challenge']
+            
+            for num in numList:
+                try:
+                    if str(num['href']).find('https://in.naver.com/') != -1:
+    #                    for _word in except_words:
+    #                        if str(num['href']).find(_word) == -1:
+                        getNaverIDtoIn.append(num['href'])
+                    
+    #                if str(num['href']).find('https://blog.naver.com/') != -1:
+                    if str(num['href']).find('blog.naver.com/') != -1:
+                        getNaverIDtoBlog.append(num['href'])
+                        
+                        
+    #                if str(num['href']).find('https://blog.naver.com/') != -1:
+    #                    getNaverIDtoBlog.append(num['href'])
+                except:
+                    pass
+            
+            
+            NaverIDtoBlog = {}
+            for _idLink in getNaverIDtoBlog:
+                isExceptWord = False
+                for _word in except_words:
+                    if str(_idLink).find(_word) != -1:
+                        isExceptWord = True
+                        break
+                if isExceptWord:
+                    continue
+            
+                _id = str(_idLink).replace('https://','').split('/')[1]
                 
-#                if str(num['href']).find('https://blog.naver.com/') != -1:
-                if str(num['href']).find('blog.naver.com/') != -1:
-                    getNaverIDtoBlog.append(num['href'])
-                    
-                    
-#                if str(num['href']).find('https://blog.naver.com/') != -1:
-#                    getNaverIDtoBlog.append(num['href'])
+                NaverIDtoBlog[_id] = 1
+                
+                if len(NaverIDtoBlog) >= size:
+                    break
+            
+    
+            NaverIDtoIn = {}
+            for _idLink in getNaverIDtoIn:
+                isExceptWord = False
+                for _word in except_words:
+                    if str(_idLink).find(_word) != -1:
+                        isExceptWord = True
+                        break
+                if isExceptWord:
+                    continue
+                
+    #            if str(_idLink).find('?query') != -1:
+    #                continue
+                
+                _id = str(_idLink).replace('https://','').split('/')[1].split('?')[0]
+                
+                NaverIDtoIn[_id] = 1
+                
+                if len(NaverIDtoIn) >= size:
+                    break
+            
+            
+            ##여기에 중복제거 로직 추가
+            for __ID in NaverIDtoIn.keys():
+                NaverIDtoIn_all[__ID] = 1
+                
+            for __ID in NaverIDtoBlog.keys():
+                NaverIDtoBlog_all[__ID] = 1
+    
+            
+        #블로그를 탐색하며 실 ID 체크 및 NICNAME 체크  
+        datalist = []
+        for k in NaverIDtoBlog_all.keys():
+            if k == '':
+                continue
+            
+            # es id 있으면 넘기기
+            if k in es_id_list:
+                continue
+            
+            dic = {}
+            dic['keyword'] = word
+            try:
+                _type = '블로거'
+                __url = 'https://blog.naver.com/'+k
+                driver.get(__url)
+                dic['id'] = k
+                dic['type'] = _type
+                
+    #                driver.switch_to.frame('mainFrame')
+    #                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
+    #                dic['name'] = _name
+                
+                _name = getMobileBlogNic()
+                if _name == -1:
+                    continue
+                
+                dic['name'] = str(_name).replace('마켓블로그','').replace('공식 블로그','')
+                
+                datalist.append(dic)
+                
+                
+                _datalist = []
+                _id = k
+                TimeString, TimeValue = DateToString2('now')
+                dic = {}
+                dic['id'] = _id
+                dic['value'] = _name
+                dic['state'] = 'False'
+                dic['date'] = TimeString
+                dic['date2'] = TimeValue
+                dic['keyword'] = word
+                dic['type'] = _type
+                
+                _datalist.append([_id, dic])
+                
+                insertBulk(_datalist, 'cubist_naver_id', esUrl)
+                
+                
+                
+                f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([word, k, _type, _name])
+                f.close()
+                
+                sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
+                
+                f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([sendText])
+                f.close()
+                
+                time.sleep(0.7)
             except:
                 pass
+            
         
-        
-        NaverIDtoBlog = {}
-        for _idLink in getNaverIDtoBlog:
-            isExceptWord = False
-            for _word in except_words:
-                if str(_idLink).find(_word) != -1:
-                    isExceptWord = True
-                    break
-            if isExceptWord:
+        for k in NaverIDtoIn_all.keys():
+            
+            if k in list(NaverIDtoBlog_all.keys()):
                 continue
-        
-            _id = str(_idLink).replace('https://','').split('/')[1]
-            
-            NaverIDtoBlog[_id] = 1
-            
-            if len(NaverIDtoBlog) >= size:
-                break
-        
-
-        NaverIDtoIn = {}
-        for _idLink in getNaverIDtoIn:
-            isExceptWord = False
-            for _word in except_words:
-                if str(_idLink).find(_word) != -1:
-                    isExceptWord = True
-                    break
-            if isExceptWord:
+                
+            if k == '':
                 continue
             
-#            if str(_idLink).find('?query') != -1:
-#                continue
-            
-            _id = str(_idLink).replace('https://','').split('/')[1].split('?')[0]
-            
-            NaverIDtoIn[_id] = 1
-            
-            if len(NaverIDtoIn) >= size:
-                break
-        
-        
-        ##여기에 중복제거 로직 추가
-        for __ID in NaverIDtoIn.keys():
-            NaverIDtoIn_all[__ID] = 1
-            
-        for __ID in NaverIDtoBlog.keys():
-            NaverIDtoBlog_all[__ID] = 1
-
-        
-    #블로그를 탐색하며 실 ID 체크 및 NICNAME 체크  
-    datalist = []
-    for k in NaverIDtoBlog_all.keys():
-        if k == '':
-            continue
-        
-        # es id 있으면 넘기기
-        if k in es_id_list:
-            continue
-        
-        dic = {}
-        dic['keyword'] = word
-        try:
-            _type = '블로거'
-            __url = 'https://blog.naver.com/'+k
-            driver.get(__url)
-            dic['id'] = k
-            dic['type'] = _type
-            
-#                driver.switch_to.frame('mainFrame')
-#                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
-#                dic['name'] = _name
-            
-            _name = getMobileBlogNic()
-            if _name == -1:
+            # es id 있으면 넘기기
+            if k in es_id_list:
                 continue
             
-            dic['name'] = str(_name).replace('마켓블로그','').replace('공식 블로그','')
-            
-            datalist.append(dic)
-            
-            
-            _datalist = []
-            _id = k
-            TimeString, TimeValue = DateToString2('now')
             dic = {}
-            dic['id'] = _id
-            dic['value'] = _name
-            dic['state'] = 'False'
-            dic['date'] = TimeString
-            dic['date2'] = TimeValue
             dic['keyword'] = word
-            dic['type'] = _type
-            
-            _datalist.append([_id, dic])
-            
-            insertBulk(_datalist, 'cubist_naver_id', esUrl)
-            
-            
-            
-            f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-            wr = csv.writer(f)
-            wr.writerow([word, k, _type, _name])
-            f.close()
-            
-            sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
-            
-            f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-            wr = csv.writer(f)
-            wr.writerow([sendText])
-            f.close()
-            
-            time.sleep(0.7)
-        except:
-            pass
+            try:
+                
+                _type = '인플루언서'
+                __url = 'https://blog.naver.com/'+k
+                driver.get(__url)
+                dic['id'] = k
+                dic['type'] = _type
+                
+    #                driver.switch_to.frame('mainFrame')
+    #                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
+    #                dic['name'] = _name
+                
+                _name = getMobileBlogNic()
+                if _name == -1:
+                    continue
+                
+                dic['name'] = str(_name).replace('마켓블로그','').replace('공식 블로그','')
+                
+                datalist.append(dic)
+                
         
-    
-    for k in NaverIDtoIn_all.keys():
-        
-        if k in list(NaverIDtoBlog_all.keys()):
-            continue
-            
-        if k == '':
-            continue
-        
-        # es id 있으면 넘기기
-        if k in es_id_list:
-            continue
-        
-        dic = {}
-        dic['keyword'] = word
-        try:
-            
-            _type = '인플루언서'
-            __url = 'https://blog.naver.com/'+k
-            driver.get(__url)
-            dic['id'] = k
-            dic['type'] = _type
-            
-#                driver.switch_to.frame('mainFrame')
-#                _name = driver.find_element_by_xpath('//*[@id="nickNameArea"]').text
-#                dic['name'] = _name
-            
-            _name = getMobileBlogNic()
-            if _name == -1:
-                continue
-            
-            dic['name'] = str(_name).replace('마켓블로그','').replace('공식 블로그','')
-            
-            datalist.append(dic)
+                _datalist = []
+                _id = k
+                TimeString, TimeValue = DateToString2('now')
+                dic = {}
+                dic['id'] = _id
+                dic['value'] = _name
+                dic['state'] = 'False'
+                dic['date'] = TimeString
+                dic['date2'] = TimeValue
+                dic['keyword'] = word
+                dic['type'] = _type
+                
+                _datalist.append([_id, dic])
+                
+                insertBulk(_datalist, 'cubist_naver_id', esUrl)
+                
+                
+                f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([word, k, _type, _name])
+                f.close()
+                
+                sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
+                
+                f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
+                wr = csv.writer(f)
+                wr.writerow([sendText])
+                f.close()
+                
+                time.sleep(0.7)
+                
+            except:
+                pass
             
     
-            _datalist = []
-            _id = k
-            TimeString, TimeValue = DateToString2('now')
-            dic = {}
-            dic['id'] = _id
-            dic['value'] = _name
-            dic['state'] = 'False'
-            dic['date'] = TimeString
-            dic['date2'] = TimeValue
-            dic['keyword'] = word
-            dic['type'] = _type
-            
-            _datalist.append([_id, dic])
-            
-            insertBulk(_datalist, 'cubist_naver_id', esUrl)
-            
-            
-            f = open('../result_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-            wr = csv.writer(f)
-            wr.writerow([word, k, _type, _name])
-            f.close()
-            
-            sendText = text.replace('{{ID}}', k).replace('{{Type}}', _type).replace('{{Name}}', _name)
-            
-            f = open('../result_form_'+DateToString('now')+'.txt', 'a', newline='', encoding='utf-8')
-            wr = csv.writer(f)
-            wr.writerow([sendText])
-            f.close()
-            
-            time.sleep(0.7)
-            
-        except:
-            pass
-        
 
-
+    totalTime = time.time() - startTime
+    print(totalTime)
+    makeLog('END' + str(totalTime), 'END')
+    
+except Exception as E:
+    
+    makeLog('ERROR ' + str(E), 'END')
+    
 
 #<a target="_blank" href="https://in.naver.com/iamchocolat?query=%EB%AF%B8%EC%8A%A4%ED%8A%B8+%EC%B0%B8%EC%97%AC+%EC%BD%98%ED%85%90%EC%B8%A0" class="name" onclick="goOtherCR(this, 'a=itb_bas*f.profile&amp;r=19&amp;i=SPC-0000000000006816.a0209rl4_nblog_post_222653959305&amp;g=%7B%22bid%22%3A%22SPC-0000000000006816%22%2C%22docRank%22%3A1%7D&amp;u='+urlencode(this.href));">쇼콜라</a>
 #        <a target="_blank" href="https://in.naver.com/cosreader?query=%EB%B7%B0%EB%9F%AC" class="name elss" onclick="return goOtherCR(this,'a=ink_kib*a.nickname&amp;r=1&amp;i=a0209rl4_nblog_post_222652147919&amp;u='+urlencode(this.href))"><span class="txt">화장품읽어주는남자</span></a>
