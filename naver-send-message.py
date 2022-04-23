@@ -610,6 +610,13 @@ try:
                     makeLog(id, '스팸 방지 문자열 해결' +str(send_num+1) , d_id, 'ING')
                     print('11')
                     
+                    
+                    
+                    
+#                    html = driver.page_source
+#                    soup = BeautifulSoup(html, 'html.parser')
+#                    numList = soup.find_all(class_= 'ale')
+#                    
                     if str(numList).find('쪽지가 성공적으로 발송되었습니다.') != -1:
                         print('발송완료')
                         
@@ -645,7 +652,23 @@ try:
                         dic['doc'] = {'state':'True'}
                         datalist.append([d_id, dic])
                         updateBulk('cubist_naver_id', datalist)
-                
+                    
+                    else:
+                        
+                        time.sleep(1)
+                        
+                        datalist = []
+                        dic = {}
+                        dic['doc'] = {'state':'Block'}
+                        datalist.append([d_id, dic])
+                        updateBulk('cubist_naver_id', datalist)
+                        
+                        time.sleep(1)
+                        
+                        print('22')
+                        ##list out of index
+                        driver.get('https://m.note.naver.com/mobile/mobileReceiveList.nhn')
+                        print('33')
                 else:
                     makeLog(id, '메시지가 보내지지 않음' +str(send_num+1) , d_id, 'END')
                     time.sleep(1)
