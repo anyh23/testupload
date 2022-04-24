@@ -363,9 +363,33 @@ try:
         
         if driver.current_url == 'https://nid.naver.com/nidlogin.login':
             print('로그인 실패')
-            makeLog(id, '로그인 실패', '', 'END')
             time.sleep(1)
+            
             updateIdState(IDtoIndex[id], 'Block')
+            time.sleep(1)
+            
+#            driver.save_screenshot('a.png')
+            
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            numList = soup.find_all(class_= 'container')
+            
+            if str(numList).find('비정상적인 활동') != -1:
+                makeLog(id, '로그인 실패 (비정상적인 활동)', '', 'END')
+                
+                time.sleep(1)
+                                
+                _datalist = []
+                dic = {}
+                dic['id'] = id
+                _datalist.append([id, dic])
+                insertBulk(_datalist, 'naver_block_sid', esUrl)
+                
+            else:
+                makeLog(id, '로그인 실패', '', 'END')
+                
+                
+
         
         try:
             ## 휴대전화 번호 확인 페이지 뜰 경우
@@ -430,10 +454,12 @@ except Exception as E:
     
 ff = 'd9fea22f568b928ee4b3ad266e9d75fc'
 
+
 #오늘 보낼 명수 체크
 #테스트 상위 50명
 try:
     send_num = 0
+    send_limit = random.randrange(23, 40)
     
     for idx, _arr in enumerate(id_arr):
         _arr = _arr['_source']
@@ -759,10 +785,10 @@ try:
 
         send_num+=1
         #정상적으로 50개 전송 완료
-        if send_num == 50:
-            print('쪽지 50개를 모두 발송하셨습니다.')
+        if send_num == send_limit:
+            print('지정된 쪽지 '+str(send_limit)+'개를 모두 발송하셨습니다.')
             time.sleep(1)
-            makeLog(id, '쪽지 50개를 모두 발송하셨습니다.', d_id, 'END')
+            makeLog(id, '지정된 쪽지 '+str(send_limit)+'개를 모두 발송하셨습니다.', d_id, 'END')
             time.sleep(1)
             updateIdState(IDtoIndex[id], 'True')
             
