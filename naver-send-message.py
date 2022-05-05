@@ -331,8 +331,7 @@ try:
         IDtoIndex[_id] = index
         
     
-    import pyperclip
-    
+    import pyperclip    
     
     if len(ids) != 0:
     
@@ -341,24 +340,29 @@ try:
         
         #id = list(ids.keys())[_a]
         #pw = list(ids.values())[_a]
+
         
         id = ''
-        id = list(ids.keys())[0]
-        pw = list(ids.values())[0]
+        rand_select = random.randrange(0, len(list(ids.keys())))
+        
+        
+        id = list(ids.keys())[rand_select]
+        pw = list(ids.values())[rand_select]
         
         #qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'_id':'asc'}],"aggs":{}}
         #r_arr = getdetails_qurey('cubist_naver_sid', qurey, esUrl = esUrl)
         
         #오늘 보낸 아이디인지 검증
         
-        
+        time.sleep(2)
         pyperclip.copy(id)
         driver.find_element_by_id('id').send_keys(Keys.CONTROL + 'v')
+        time.sleep(2)
         pyperclip.copy(pw)
         driver.find_element_by_id('pw').send_keys(Keys.CONTROL + 'v')
-        time.sleep(0.7)
+        time.sleep(2)
         driver.find_element_by_id('upper_login_btn').click()
-        time.sleep(1)
+        time.sleep(1.5)
         
         
         if driver.current_url == 'https://nid.naver.com/nidlogin.login':
@@ -441,7 +445,7 @@ try:
             keyword_new_dic [_arr['_source']['value']] = _arr['_source']['state']    
         
     #    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
-        qurey = {"query":{"bool":{"must":[{"match":{"state":"False"}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
+        qurey = {"query":{"bool":{"must":[{"match":{"state":"False"}}],"must_not":[],"should":[]}},"from":0,"size":100,"sort":[{'date':'desc'}],"aggs":{}}
         id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
         
     else:
@@ -506,12 +510,13 @@ try:
         
         
         ##보내기
+        time.sleep(2)
         pyperclip.copy(d_id)
         driver.find_element_by_id('who').send_keys(Keys.CONTROL + 'v')
-        time.sleep(0.7)
+        time.sleep(2)
         pyperclip.copy(s_message)
         driver.find_element_by_id('note').send_keys(Keys.CONTROL + 'v')
-        time.sleep(0.7)
+        time.sleep(2)
         driver.find_element_by_id('send1').click()
         time.sleep(3)
     
@@ -611,11 +616,11 @@ try:
     
                             makeLog(id, 'captcha solving..' +str(send_num+1) , d_id, 'ING')
         
-                            time.sleep(0.5)
+                            time.sleep(1)
                             driver.find_element_by_id('captchavalue').send_keys(captcha_text) 
-                            time.sleep(0.5)
+                            time.sleep(1)
                             driver.find_element_by_id('captchaSend').click()
-                            time.sleep(0.5)
+                            time.sleep(1)
                             try:
                                 driver.find_element_by_css_selector('body').send_keys(Keys.ENTER)
                             except:
