@@ -391,6 +391,33 @@ try:
                 
             else:
                 makeLog(id, '로그인 실패', '', 'END')
+        
+        if str(driver.current_url).find('https://nid.naver.com/mobile/user/help/idRelease') != -1:
+            print('로그인 실패')
+            time.sleep(1)
+            
+            updateIdState(IDtoIndex[id], 'Block')
+            time.sleep(1)
+            
+#            driver.save_screenshot('a.png')
+            
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            numList = soup.find_all(class_= 'container')
+            
+            if str(numList).find('대량생성') != -1:
+                makeLog(id, '로그인 실패 (대량 생성 Black)', '', 'END')
+                
+                time.sleep(1)
+                                
+                _datalist = []
+                dic = {}
+                dic['id'] = id
+                _datalist.append([id, dic])
+                insertBulk(_datalist, 'naver_block_sid', esUrl)
+                
+            else:
+                makeLog(id, '로그인 실패 (대량 생성 Black)', '', 'END')
                 
                 
 
@@ -413,7 +440,10 @@ try:
         #else:
         #    #로그인이 안되었을 수 있음
         #     makeLog(id, '로그인이 안되었을수 있음', '', 'END')
-            
+        
+        
+        
+        
             
         
         
@@ -427,22 +457,25 @@ try:
         for _arr in memo_arr:
             memo_list.append(_arr['_source']['value'])
             
-        qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-        message_arr = getdetails_qurey('cubist_naver_message', qurey, esUrl = esUrl)
+        # qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+        # message_arr = getdetails_qurey('cubist_naver_message', qurey, esUrl = esUrl)
             
-        message_list = []
-        for _arr in message_arr:
-            message_list.append(_arr['_source']['value'])
+        # message_list = []
+        # for _arr in message_arr:
+        #     message_list.append(_arr['_source']['value'])
         
         
         qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
         keyword_arr = getdetails_qurey('cubist_naver_keyword', qurey, esUrl = esUrl)
             
         keyword_dic = {}
-        keyword_new_dic = {} 
+        keyword_new_dic = {}
+        keyword_company_dic = {}
         for _arr in keyword_arr:
             keyword_dic[_arr['_source']['value']] = _arr['_source']['type']
-            keyword_new_dic [_arr['_source']['value']] = _arr['_source']['state']    
+            keyword_new_dic [_arr['_source']['value']] = _arr['_source']['state']
+            keyword_company_dic[_arr['_source']['state']] = _arr['_source']['keyword']
+              
         
     #    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
         qurey = {"query":{"bool":{"must":[{"match":{"state":"False"}}],"must_not":[],"should":[]}},"from":0,"size":100,"sort":[{'date':'desc'}],"aggs":{}}
@@ -491,7 +524,17 @@ try:
         _nicName = _arr['value']
         _keywordNum = keyword_dic.get(_arr['keyword'], '')
         _keyword = keyword_new_dic.get(_arr['keyword'])
+        _company = keyword_company_dic.get(_keyword)
         _type = _arr['type']
+        
+        
+        # qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+        qurey = {"query":{"bool":{"must":[{"match":{"type.keyword":_company}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+        message_arr = getdetails_qurey('cubist_naver_message', qurey, esUrl = esUrl)
+            
+        message_list = []
+        for _arr in message_arr:
+            message_list.append(_arr['_source']['value'])
         
         
         #렌덤으로 문장 생성
