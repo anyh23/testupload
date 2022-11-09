@@ -33,7 +33,7 @@ import urllib.request
 
 import warnings
 warnings.filterwarnings("ignore")
-chromedriver_autoinstaller.install()
+chromedriver_autoinstaller.install(True)
 
 
 driver = ''
