@@ -403,7 +403,8 @@ try:
             
             html = driver.page_source
             soup = BeautifulSoup(html, 'html.parser')
-            numList = soup.find_all(class_= 'container')
+            #numList = soup.find_all(class_= 'container')
+            numList = soup.find('div', id = 'container')
             
             if str(numList).find('대량생성') != -1:
                 makeLog(id, '로그인 실패 (대량 생성 Black)', '', 'END')
@@ -417,7 +418,7 @@ try:
                 insertBulk(_datalist, 'naver_block_sid', esUrl)
                 
             else:
-                makeLog(id, '로그인 실패 (대량 생성 Black)', '', 'END')
+                makeLog(id, '로그인 실패 (대량 생성 Black 아닌듯?)', '', 'END')
                 
                 
 
