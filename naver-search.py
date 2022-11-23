@@ -415,7 +415,7 @@ try:
         NaverIDtoBlog_all = {}
         NaverIDtoIn_all = {}
         
-        for _url in _urlList:
+        for _url in set(_urlList):
         
             if str(_url)[0] == '?':
     #            _url = 'https://search.naver.com/search.naver'+_url
