@@ -339,7 +339,7 @@ try:
             message_list.append(_arr['_source']['value'])
         
         #키워드가 삭제됨
-        if len(message_list):
+        if len(message_list) == 0:
             
             makeLog('google', str(idx+1), d_id, '키워드가 삭제됨')
             time.sleep(1)
