@@ -295,6 +295,7 @@ def updateIdState(_id, state):
 
 
 s = time.time()
+lastIdx = 0
 
 try:
     
@@ -314,7 +315,7 @@ try:
     qurey = {"query":{"bool":{"must":[{"match":{"state":"False"}}],"must_not":[],"should":[]}},"from":0,"size":100,"sort":[{'date':'desc'}],"aggs":{}}
     id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
     
-
+    
     for idx, _arr in enumerate(id_arr):
         _arr = _arr['_source']
         
@@ -350,8 +351,8 @@ try:
         sender_id = 'cubistmaster@gmail.com'
         pw = 'cleihlqyyxpdcjgy'
         
-        # resiver = d_id+'@naver.com'
-        resiver = 'iriyakana@naver.com'
+        resiver = d_id+'@naver.com'
+        # resiver = 'iriyakana@naver.com'
         recipients = [resiver]
         password = pw
         
@@ -387,18 +388,27 @@ try:
         datalist.append([d_id, dic])
         updateBulk('cubist_naver_id', datalist)
         
-        break
+        
+        lastIdx = idx
+        
+        # break
     
+    print('all send count :', str(lastIdx))
     print('all send time :',time.time() - s)
     
 except Exception as E:
+    print(str(lastIdx)+' ERROR')
     print(E)
-    makeLog('google', str(E), d_id, 'ERROR')
+    makeLog('google', str(E), d_id, str(lastIdx)+' ERROR')
     time.sleep(1)
     # updateIdState(IDtoIndex[id], 'Block')
     
-       
+
+# qurey = {"query":{"bool":{"must":[{"match":{"state.keyword":'True'}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+# message_arr = getdetails_qurey('cubist_naver_smessage', qurey, esUrl = esUrl)
+# message_arr[0]
         
+
 #        if str(E).find('하루에 보낼 수 있는 쪽지 50개를 모두 발송하셨습니다.') != -1:
 #            
             
