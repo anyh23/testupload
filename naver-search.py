@@ -267,42 +267,50 @@ try:
     
     startTime = time.time()
     
-    words = readCsv('../keyword.txt')
+    # words = readCsv('../keyword.txt')
+    # print('검색어 :', words)
+    
+    # if words[0][0].find('auto')!= -1:
+    #     print('auto mode start')
+    
+    #     q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+    #     r_arr = getdetails_qurey('cubist_naver_keyword', q)
+        
+    #     _temp = []
+        
+    #     for _arr in r_arr:
+    #         _arr = _arr['_source']
+    #         _temp.append([_arr['value']])
+    
+    #     words = _temp
+    #     print('검색어 :', words)
+    
+    q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
+    r_arr = getdetails_qurey('cubist_naver_keyword', q)
+    _temp = []
+    for _arr in r_arr:
+        _arr = _arr['_source']
+        _temp.append([_arr['value']])
+    words = _temp
     print('검색어 :', words)
     
-    if words[0][0].find('auto')!= -1:
-        print('auto mode start')
     
-        q = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
-        r_arr = getdetails_qurey('cubist_naver_keyword', q)
-        
-        _temp = []
-        
-        for _arr in r_arr:
-            _arr = _arr['_source']
-            _temp.append([_arr['value']])
-    
-        words = _temp
-        print('검색어 :', words)
-    
-    
-    try:
-        size = readCsv('./size.txt')
-    except:
-        size = readCsv('../size.txt')
-    
-    size = int(size[0][0])
-    #size = 10
+    # try:
+    #     size = readCsv('./size.txt')
+    # except:
+    #     size = readCsv('../size.txt')
+    # size = int(size[0][0])
+    size = 10
     print('검색 사이즈 :', size)
     
-    try:
-        message = readCsv('./message.txt')
-    except:
-        message = readCsv('../message.txt')
+    # try:
+    #     message = readCsv('./message.txt')
+    # except:
+    #     message = readCsv('../message.txt')
     
     text = ''
-    for _m in message:
-        text += (_m[0])
+    # for _m in message:
+    #     text += (_m[0])
     
     
     overTime = len(words) * 2 * size
@@ -322,6 +330,7 @@ try:
     #timer = threading.Timer(overTime, overTimer)
     #timer.start()
     
+    time.sleep(2)
     
     
     options = webdriver.ChromeOptions() 
@@ -334,6 +343,8 @@ try:
     options.add_experimental_option('useAutomationExtension', False)
     #driver = webdriver.Chrome(options=options, executable_path=r'../chromedriver_win3298/chromedriver')
     driver = webdriver.Chrome(options=options)
+    
+    time.sleep(1)
     
     #driver = webdriver.Chrome()
     
