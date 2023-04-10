@@ -418,6 +418,10 @@ except Exception as E:
     # updateIdState(IDtoIndex[id], 'Block')
     
 
+# qurey = {"query":{"bool":{"must":[{"match":{"state":"False"}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
+# id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
+# len(id_arr)
+
 # qurey = {"query":{"bool":{"must":[{"match":{"state.keyword":'True'}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[],"aggs":{}}
 # message_arr = getdetails_qurey('cubist_naver_smessage', qurey, esUrl = esUrl)
 # message_arr[0]
