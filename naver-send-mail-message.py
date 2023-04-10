@@ -312,9 +312,8 @@ try:
           
     
 #    qurey = {"query":{"bool":{"must":[{"match_all":{}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
-    qurey = {"query":{"bool":{"must":[{"match":{"state":"False"}}],"must_not":[],"should":[]}},"from":0,"size":100,"sort":[{'date':'desc'}],"aggs":{}}
+    qurey = {"query":{"bool":{"must":[{"match":{"state":"False"}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
     id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
-    
     
     for idx, _arr in enumerate(id_arr):
         _arr = _arr['_source']
@@ -389,7 +388,7 @@ try:
         updateBulk('cubist_naver_id', datalist)
         
         
-        lastIdx = idx
+        lastIdx = idx+1
         
         # break
     
