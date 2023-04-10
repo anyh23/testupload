@@ -315,6 +315,8 @@ try:
     qurey = {"query":{"bool":{"must":[{"match":{"state":"False"}}],"must_not":[],"should":[]}},"from":0,"size":1000,"sort":[{'date':'desc'}],"aggs":{}}
     id_arr = getdetails_qurey('cubist_naver_id', qurey, esUrl = esUrl)
     
+    # _arr = id_arr[0]['_source']
+    
     for idx, _arr in enumerate(id_arr):
         _arr = _arr['_source']
         
@@ -336,6 +338,19 @@ try:
         for _arr in message_arr:
             message_list.append(_arr['_source']['value'])
         
+        #키워드가 삭제됨
+        if len(message_list):
+            
+            makeLog('google', str(idx+1), d_id, '키워드가 삭제됨')
+            time.sleep(1)
+            
+            datalist = []
+            dic = {}
+            dic['doc'] = {'state':'Keyword'}
+            datalist.append([d_id, dic])
+            updateBulk('cubist_naver_id', datalist)
+            
+            continue
         
         #렌덤으로 문장 생성
         b = random.randrange(0, len(message_list))
